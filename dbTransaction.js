@@ -4,9 +4,15 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
-
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
 dotenv.config();
 const app = express();
+const SECRET_KEY = process.env.SECRET_KEY
+app.use(cors({
+    origin: 'http://localhost:3001', // Nuxt's dev server port
+    credentials: true,
+  }));
 app.use(bodyParser.json());
 const db = new sqlite3.Database('bubbles.db')
 const dbPath = process.env.DB_PATH
@@ -24,10 +30,26 @@ const sanitizeInput = (input) => {
     return input.replace(/[^a-zA-Z0-9_@:/]/g, '');
 };
 
+const generateToken = (payload)=>{
+    const options = {
+        expiresIn:'30m',
+    };
+    return jwt.sign(payload,SECRET_KEY,options)
+}
+
+const verifyToken= (token)=>{
+    try{
+        const decoded = jwt.verify(token,SECRET_KEY);
+        return decoded;
+    }catch(err){
+        throw new Error ('invalid token')
+    }
+};
 
 // Inster User API
 
-app.post('/insert_user', async (req, res) => {
+app.post('/api/insert_user', async (req, res) => {
+    
     const { userName, avatar, email, name, password } = req.body;
     if (!userName || !avatar || !email || !name || !password) {
         return res.status(400).json({
@@ -76,9 +98,12 @@ app.post('/insert_user', async (req, res) => {
 });
 
 
+
+
+
 // Get User API
 
-app.post('/get_user', async (req, res) => {
+app.post('/api/login_user', async (req, res) => {
     const { userName, password } = req.body;
     if (!userName || !password) {
         return res.status(400).json({
@@ -104,9 +129,16 @@ app.post('/get_user', async (req, res) => {
                 console.log('user.password type:', typeof user.password);  // Should print 'string'
                 const isMatch = await bcrypt.compare(sanitizedPassword,user.password.toString())
                     if (isMatch){
+                        const payload = {
+                            username : userName
+                        }
+                        const token = generateToken(payload)
+                        console.log(`token generated ${token} is valid for 30 min` )
                         console.log("Password Match");
                         return res.status(200).json({
-                            message:'Access granted'
+                            message:'Access granted',
+                            token:token,
+                            expiresInMin:30
                         })
                     }else{
                         console.log("Password not matching")
@@ -127,9 +159,52 @@ app.post('/get_user', async (req, res) => {
 
 });
 
+// API to verify token
+
+app.post('/api/verify_token',async(req,res)=>{
+    const {token}=req.body;
+    if (!token){
+        return res.status(400).json({
+            error:'Token is not valid or is missing'
+        });
+    }
+
+    try{
+        const decodedToken = await verifyToken(token);
+        console.log('decoded token is valid');
+        return res.status(200).json({
+            message:'Token is valid',
+            token :decodedToken
+        });
+    }catch(err){
+        console.error(err.message)
+        return res.status(400).json({
+            error:err.message
+        })
+    }   
+
+});
+
+
     
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
+
+// Testing section
+
+// const userPayload = {
+//     userId : 'A3423',
+//     userName : 'boo1'
+// }
+// const token = generateToken(userPayload);
+// console.log('Generated token: ',token)
+
+// try{
+//     const decodedToken = verifyToken(token);
+//     console.log ('Decoded Payload :',decodedToken);
+// }catch (err){
+//      console.error(err.message)
+// }
