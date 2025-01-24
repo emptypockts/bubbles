@@ -3,8 +3,7 @@ export default defineNuxtConfig({
   vite:{
     server:{
       hmr:{
-        timeout:30000,
-        clientPort:3001
+        clientPort:3002
       },
       proxy:{
         '/ws': { target: 'ws://raspberrypi.local:3000', ws: true }, // WebSocket

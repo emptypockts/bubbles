@@ -197,8 +197,15 @@ app.get('/api/get_bubbles',async(req,res)=>{
         driver:sqlite3.Database
     });
     const query=`
-    SELECT * FROM bubbles WHERE username=? ORDER BY created_at ASC;
-    `
+    SELECT * FROM (
+    SELECT *
+    FROM bubbles 
+    WHERE username=? 
+    ORDER BY created_at DESC
+    LIMIT 10
+    )AS subquery
+    ORDER BY created_at ASC;
+    `;
     const bubbles= await db.all(query,[userName])
 
     try{

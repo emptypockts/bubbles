@@ -24,6 +24,14 @@
         </div>
         <div class="bubble-form">
             <img v-if="userAvatar" :src="userAvatar" alt="User Avatar" class="avatar" :title="userName"/>
+            <div class="menu-container">
+              <button class="menu-button" @click="toggleMenu">
+                &#x22EE;
+              </button>
+              <div v-if="showMenu" class="menu-dropdown">
+                <button @click="logout">logout</button>
+              </div>
+            </div>
         <form @submit.prevent="create_bubble">
         <input v-model="message" label="message" placeholder="bubble pop bubble pop">
         
@@ -54,7 +62,15 @@ const getBubbleStyle = () => {
   };
 };
 
-
+const showMenu=ref(false);
+const toggleMenu=()=>{
+  showMenu.value =!showMenu.value
+};
+const logout=()=>{
+  console.log('bye bye')
+  localStorage.clear();
+  route.push('/');
+}
 
 const create_bubble=async()=>{
     isLoading.value=true;
@@ -149,7 +165,7 @@ onMounted(async ()=>{
 
     await verifyToken();
     get_bubbles();
-    get_avatar;
+    get_avatar();
     if (play.value){
         initializeWebSocket('ws:raspberrypi.local:3000',handleNewBubble);
     }
@@ -179,12 +195,12 @@ onUnmounted(()=>{
 .bubble-container {
   position: relative;
   width: 100%;
-  height: 150px;
-  overflow: hidden;
+  height: 100%;
+  overflow-y: auto;
   background:rgba(250, 163, 246, 0.121)
 }
 .bubble {
-  position: absolute;
+  position: relative;
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -246,7 +262,7 @@ onUnmounted(()=>{
     transform: translateX(0px);
   }
   50% {
-    transform: translateX(20px);
+    transform: translateX(200px);
   }
   100% {
     transform: translateX(0px);
@@ -259,6 +275,42 @@ onUnmounted(()=>{
 }
 .bubble-list li{
     margin-bottom: 20px;
+}
+.menu-container {
+  position: relative;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  z-index: 1000;
+  padding: 5px;
+}
+
+.menu-dropdown button {
+  background: none;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.menu-dropdown button:hover {
+  background: #f0f0f0;
 }
 
 </style>
