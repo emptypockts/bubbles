@@ -54,6 +54,8 @@ const handleLogin= async()=>{
         });
         console.log(response)
         localStorage.setItem('token',response.token);
+        localStorage.setItem('userName',userName.value)
+        localStorage.setItem('avatar',response.avatar)
         router.push('/playground')
     }catch(err){
         errorMessage.value=err.message||'Login failed';

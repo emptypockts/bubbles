@@ -42,6 +42,7 @@ const verifyToken= (token)=>{
         const decoded = jwt.verify(token,SECRET_KEY);
         return decoded;
     }catch(err){
+        console.error('Token verification error:', err); // Log the error for more details
         throw new Error ('invalid token')
     }
 };
@@ -126,7 +127,6 @@ app.post('/api/login_user', async (req, res) => {
     try{
             if (user){
                 console.log(`User ${userName} found`)
-                console.log('user.password type:', typeof user.password);  // Should print 'string'
                 const isMatch = await bcrypt.compare(sanitizedPassword,user.password.toString())
                     if (isMatch){
                         const payload = {
@@ -138,7 +138,8 @@ app.post('/api/login_user', async (req, res) => {
                         return res.status(200).json({
                             message:'Access granted',
                             token:token,
-                            expiresInMin:30
+                            expiresInMin:30,
+                            avatar:user.avatar
                         })
                     }else{
                         console.log("Password not matching")
@@ -168,7 +169,6 @@ app.post('/api/verify_token',async(req,res)=>{
             error:'Token is not valid or is missing'
         });
     }
-
     try{
         const decodedToken = await verifyToken(token);
         console.log('decoded token is valid');
@@ -182,8 +182,91 @@ app.post('/api/verify_token',async(req,res)=>{
             error:err.message
         })
     }   
-
 });
+
+// get bubbles per user
+app.get('/api/get_bubbles',async(req,res)=>{
+    const {userName}=req.query;
+    if (!userName){
+        return res.status(400).json({
+            error:'Missing username'
+        });
+    }
+    const db=await open({
+        filename:dbPath,
+        driver:sqlite3.Database
+    });
+    const query=`
+    SELECT * FROM bubbles WHERE username=? ORDER BY created_at ASC;
+    `
+    const bubbles= await db.all(query,[userName])
+
+    try{
+        if (bubbles){
+            console.log(bubbles)
+            return res.status(200).json(
+                bubbles
+            )
+            
+        }
+    }catch(err){
+        console.error(`Error trying to fetch bubbles ${err}`)
+        return res.status(500).json({
+            error:'Error trying to fetch bubbles'
+        })
+    }
+})
+
+app.post('/api/create_bubble', async(req,res)=>{
+    const {userName,content}=req.body;
+    if (!userName||!content){
+        console.error('Missing fields')
+        res.status(400).json({
+            error:'Missing fields'
+        })
+    }
+    const db = await open({
+        filename:dbPath,
+        driver:sqlite3.Database
+    })
+    const query=`
+    INSERT INTO bubbles (userName,content,expires_at)
+    VALUES (?,?,?);
+    `;
+    const currentTime= new Date();
+    const expiresAt= new Date(currentTime.getTime()+2*60*1000);
+    const expiresAtFormatted= expiresAt.toISOString().slice(0,19).replace('T',' ');
+try{
+    const result= await db.run(query, [userName,content,expiresAtFormatted])
+    if(result.changes<1){
+        console.error('Error inserting bubble: ')
+        return res.status(400).json({
+            error:'There was an error trying to insert the bubble'
+        })
+    }else{
+    
+        const bubbleId = result.lastID
+
+        const bubbleQuery=`
+        SELECT bubble_id,username, content , created_at, expires_at FROM bubbles WHERE bubble_id =?;
+        `;
+        const bubble = await db.get(bubbleQuery,[bubbleId]);
+        console.log(`bubble inserted successfully with bubbleID ${bubbleId}`)
+                return res.status(200).json({
+                    message:'bubble inserted successfully',
+                    bubble:bubble
+                })
+            }
+
+}catch(err){
+    console.error('Error: ',err)
+    return res.status(400).json({
+        error:'error trying to insert data into the database'
+    })
+}
+
+})
+
 
 
     
