@@ -10,12 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@nuxtjs/proxy": "^2.1.0",
-=======
-    "@nuxtjs/tailwindcss": "^6.13.1",
-    "@vueuse/nuxt": "^12.4.0",
->>>>>>> 57fffa746420cda2df1fcc65716fe475503c81d0
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "express": "^4.21.2",
