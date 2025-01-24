@@ -13,9 +13,14 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+<<<<<<< HEAD
   runtimeConfig: {
     public: {
       apiBaseURL: 'http://raspberrypi.local:3000', // Update to Raspberry Pi's address and port
     },
   },
 });
+=======
+  modules: ['@nuxtjs/tailwindcss', '@vueuse/nuxt']
+})
+>>>>>>> 57fffa746420cda2df1fcc65716fe475503c81d0
