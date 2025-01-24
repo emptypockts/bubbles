@@ -7,7 +7,7 @@ export default defineNuxtConfig({
         clientPort:3001
       },
       proxy:{
-        '/ws': { target: 'ws://raspberrypi.local:3000', ws: true }, // WebSocket
+        '/ws': { target: 'ws://raspberrypi.local:3000', ws: true }, 
       }
     }
   },
@@ -16,7 +16,7 @@ export default defineNuxtConfig({
 <<<<<<< HEAD
   runtimeConfig: {
     public: {
-      apiBaseURL: 'http://raspberrypi.local:3000', // Update to Raspberry Pi's address and port
+      apiBaseURL: 'http://raspberrypi.local:3000', 
     },
   },
 });
