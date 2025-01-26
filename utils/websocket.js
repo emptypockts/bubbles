@@ -1,5 +1,5 @@
 let socket = null;
-export const initializeWebSocket = (url, onMesaggeCallback) => {
+export const initializeWebSocket = (url, onMessageCallback) => {
     socket = new WebSocket(url);
 
     socket.onopen = () => {
