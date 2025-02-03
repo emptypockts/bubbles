@@ -10,21 +10,21 @@ dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
 const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001']
-app.use(cors({
-    origin: 'http://localhost:3001', // Nuxt's dev server port
-    credentials: true,
-  }));
-// const corsOptions = {
-//     origin: function (origin, callback) {
-//         if (allowedOrigins.includes(origin) || !origin) {
-//             callback(null, true);
+// app.use(cors({
+//     origin: 'http://localhost:3001', // Nuxt's dev server port
+//     credentials: true,
+//   }));
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
 
-//         } else {
-//             callback(new Error('not allowed by CORS'));
-//         }
-//     },
-// };
-// app.use(cors(corsOptions))
+        } else {
+            callback(new Error('not allowed by CORS'));
+        }
+    },
+};
+app.use(cors(corsOptions))
 app.use(bodyParser.json());
 const db = new sqlite3.Database('bubbles.db')
 const dbPath = process.env.DB_PATH
@@ -324,7 +324,7 @@ app.post('/api/create_bubble', async (req, res) => {
 
 })
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0',() => {
     console.log(`Server is running on port ${PORT}`);
 });
 
