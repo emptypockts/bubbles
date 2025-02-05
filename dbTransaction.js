@@ -231,7 +231,7 @@ app.get('/api/get_bubbles', async (req, res) => {
         })
     }
 })
-// get last 10 bubbles for other users
+
 app.get('/api/get_bubbles_all', async (req, res) => {
     const { userName, lastLoadedAt } = req.query;
     const params = [userName]
@@ -255,7 +255,7 @@ app.get('/api/get_bubbles_all', async (req, res) => {
         query += `AND created_at < ?`;
         params.push(lastLoadedAt);
     }
-    query += `ORDER BY created_at DESC LIMIT 20`;
+    query += `ORDER BY created_at ASC LIMIT 20`;
     const bubbles = await db.all(query, params)
     try {
         if (bubbles) {
@@ -278,7 +278,7 @@ app.post('/api/create_bubble', async (req, res) => {
     if (!userName || !content) {
         console.error('Missing fields')
         res.status(400).json({
-            error: 'Missing fields'
+            error: 'missing fields'
         });
     }
 
@@ -321,6 +321,44 @@ app.post('/api/create_bubble', async (req, res) => {
             error: 'error trying to insert data into the database'
         })
     }
+
+})
+
+//delete bubble
+
+app.post('/api/delete_bubble',async(req,res)=>{
+    const {userName,bubbleId}=req.body;
+    if (!userName||!bubbleId){
+        console.error('missing fields')
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+const db = await open({
+    filename:dbPath,
+    driver:sqlite3.Database
+})
+
+const query=
+`
+DELETE FROM bubbles WHERE bubble_id=? AND username =?
+`;
+
+
+const response = await db.run(query,[bubbleId,userName])
+if (response.changes===0){
+    console.log('error deleting the bubble:',response.stmt['Statement'])
+    return res.status(404).json({
+        error:`error deleting bubble: ${response.stmt['Statement']}` 
+    })
+}else{
+    console.log('bubble deleted')
+    return res.status(200).json({
+        message:'bubble deleted'
+        
+    })
+}
+db.close();
 
 })
 const PORT = process.env.PORT || 3000;

@@ -1,13 +1,14 @@
 <template>
   <div class="app-container">
     <meta name="viewport" content="width=device-width, initial-scale=0.5">
-  <div v-if="play">
-    <div class="bubble-container">
+  <div v-if="play" class="bubble-container">
+    <div >
       <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
-        :class="bubble.username === userName ? 'my-bubble' : 'bubble'">
-        <svg v-if="bubble.username===userName" @click="deleteBubble" class="bubble-delete-logo" data-slot="icon" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-</svg>      
+        :class="bubble.username === userName ? 'my-bubble': 'bubble'">
+
+        <button v-if="bubble.username===userName" @click="deleteBubble(bubble.bubble_id)" class="bubble-delete-logo">
+          ˗ˏˋ ♡ ˎˊ˗ 
+          </button>
         <p class="bubble-username">
           <div v-if="bubble.username!==userName">
           {{ bubble.username }} said<br>
@@ -58,7 +59,7 @@
 
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useNuxtApp } from '#app';
+import { useNuxtApp, useRuntimeConfig } from '#app';
 import { formatDateAgo } from '#imports';
 const {$websocket}=useNuxtApp();
 const route = useRouter();
@@ -96,7 +97,6 @@ const create_bubble = async () => {
       })
       console.log('bubble created response :',response.bubble);
       $websocket.send(JSON.stringify(response.bubble))
-      console.log('testing hmr')
       // removed this as it is redundant with the websocket line above 👆
       // handleNewBubble(response.bubble);
       message.value = '';
@@ -110,9 +110,31 @@ const create_bubble = async () => {
 
 }
 
-const deleteBubble= ()=>{
-  console.log('delete bubble')
-}
+const deleteBubble=async (bubbleId)=>{
+  isLoading.value=true;
+  console.log('deleting bubbleId',bubbleId)
+  console.log('user',userName.value)
+  try{
+  const response  = await $fetch('/api/delete_bubble',{
+    baseURL:useRuntimeConfig().public.apiBaseURL,
+    method:'POST',
+    body:{
+      bubbleId: bubbleId,
+      userName:userName.value
+    }
+  })
+  console.log('bubble deleted',response)
+  console.log(bubbles.value)
+  bubbles.value =bubbles.value.filter(bubble=>bubble.bubble_id!==bubbleId);
+  console.log('now we have this ',bubbles.value)
+  }catch(err){
+    console.error('error deleting bubble',err)
+    isLoading.value=false;
+  }finally{
+    isLoading.value=false;
+  }
+
+};
 
 const verifyToken = async () => {
 
@@ -254,7 +276,7 @@ onUnmounted(() => {
 const sortedBubbles = computed(() => {
   const combined = [...bubbles.value, ...allBubbles.value];
 
-  return combined.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map(combined=>({
+  return combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map(combined=>({
     ...combined,
     timeAgo:formatDateAgo(combined.created_at)
   }))
@@ -263,8 +285,6 @@ const sortedBubbles = computed(() => {
 
 
 const getBubbleStyle = (bubble) => {
-  const randomLeft = Math.random() * 90; // Random position between 0% and 90% of the container width
-  const randomDuration = Math.random() * 5 + 5; // Random animation duration between 5s and 10s
   return {
     left: `${bubble.left}%`
   };
@@ -279,31 +299,34 @@ const getBubbleStyle = (bubble) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Bubble-themed background */
-  background-size: cover;
+  min-height: 100%;
+  background-image:url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Bubble-themed background */
+  background-size:auto;
   background-position: center;
   padding: 20px;
   background-color: rgba(241, 163, 237, 0.071);
+  background-repeat: repeat-y;
 }
 .bubble-delete-logo{
-  size: 100px;
+  size: 10px;
+  background: transparent;
+  border: transparent;
+  color:white;
 }
 .bubble-delete-logo:hover {
-    color: #ffffffce;
+    color: #1c0101ce;
     opacity:.5;
     cursor: pointer;
-    /* Customize the icon color */
+    
 }
 
 .bubble-form {
-  position: fixed;
+  position:fixed;
   right: 20px;
   bottom: 20px;
   display: flex;
   align-items: center;
   background: rgba(187, 127, 174, 0.326); /* Semi-transparent background */
-
   padding: 10px;
   border-radius: 24px; /* Rounded corners to match bubbles */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
@@ -334,14 +357,11 @@ const getBubbleStyle = (bubble) => {
   display: flex;
   flex-direction: column;
   /* Stack items vertically */
-  justify-content: center;
-  /* Vertically align items in the center */
-  align-items: center;
-  /* Horizontally align items in the center */
+ 
   text-align: center;
   font-size: 14px;
   color: #f90b9ac9;
-  animation: float 6s infinite ease-in-out, drift 10s infinite ease-in-out;
+  animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
   padding: 10px;
   /* Add padding for spacing inside the bubble */
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -350,10 +370,12 @@ const getBubbleStyle = (bubble) => {
   /* Ensure padding doesn't affect bubble size */
   overflow: hidden;
   /* Ensure content stays within the bubble */
+  z-index: 2; /* Ensure it's above bubbles */
+
 }
 
 /* Add a pseudo-element for a reflection effect */
-.my-bubble::before {
+.my-bubble::before, .bubble::before{
   content: '';
   position: absolute;
   top: 10%;
@@ -361,11 +383,11 @@ const getBubbleStyle = (bubble) => {
   width: 40%;
   height: 20%;
   background: radial-gradient(circle at 50% 50%,
-      rgb(255, 255, 255),
+      rgb(241, 236, 241),
       rgba(255, 255, 255, 0) 70%);
   border-radius: 50%;
   transform: rotate(45deg);
-  opacity: 0.2;
+  opacity: .1;
 }
 
 /* Float animation */
@@ -377,7 +399,7 @@ const getBubbleStyle = (bubble) => {
   }
 
   50% {
-    transform: translateY(-20px) rotate(2deg);
+    transform: translateY(-20px) rotate(20deg);
   }
 }
 
@@ -399,7 +421,7 @@ const getBubbleStyle = (bubble) => {
   margin: 0;
   font-family:sans-serif;
   font-weight:400;
-  color: rgba(71, 71, 71, 0.76);
+  color: rgba(252, 247, 247, 0.906);
   font-size:16px;
 
 }
@@ -432,7 +454,7 @@ const getBubbleStyle = (bubble) => {
   text-align: center;
   font-size: 14px;
   color: #f90b9ac9;
-  animation: float 6s infinite ease-in-out, drift 10s infinite ease-in-out;
+  animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
   padding: 10px;
   /* Add padding for spacing inside the bubble */
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -485,7 +507,7 @@ const getBubbleStyle = (bubble) => {
 }
 
 .input-field:focus {
-  border-color: rgba(250, 101, 242, 0.8); /* Bubble's pink color */
+  border-color: rgba(224, 207, 223, 0.8); /* Bubble's pink color */
   box-shadow: 0 0 10px rgba(250, 101, 242, 0.4); /* Glow effect */
 }
 .submit-button {
@@ -499,7 +521,7 @@ const getBubbleStyle = (bubble) => {
     rgba(250, 101, 242, 0.1) 100%
   ); /* Bubble gradient */
   color: #f9f7f8e8; /* Bubble text color */
-  
+  border: 1px;
   border-radius: 20px; /* Rounded corners */
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
@@ -563,6 +585,12 @@ const getBubbleStyle = (bubble) => {
 
 .menu-dropdown button:hover {
   background: rgba(250, 101, 242, 0.2); /* Light pink background on hover */
+}
+.bubble-container{
+  position: flex;
+  top:20px;
+  margin-top: 0%;
+  justify-content: center;
 }
 
 </style>
