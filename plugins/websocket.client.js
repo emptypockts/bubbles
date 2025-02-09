@@ -1,11 +1,10 @@
 export default defineNuxtPlugin((nuxtApp) => {
 let socket =null;
 
- const initializeWebSocket=(url,onMessageCallback)=>{
+ const initializeWebSocket=(url,onMessageCallback,userName)=>{
     console.log('this is the ws client. the url passed is: ',url)
      socket = new WebSocket(url);
-    socket.onopen = ()=>{
-        console.log('websocket is open');
+    socket.onopen =()=>{
     }
     socket.onmessage = (event) =>{
         const data= JSON.parse(event.data);

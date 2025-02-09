@@ -1,5 +1,5 @@
 <template>
-    <div class="login-container">
+  <html lang="EN">    <div class="login-container">
       <div class="login-box">
         <h1 class="login-title">
           bubbles<br>
@@ -34,6 +34,8 @@
         </form>
       </div>
     </div>
+    </html>
+
   </template>
 <script setup>
 import {ref} from 'vue';
@@ -135,10 +137,10 @@ const handleLogin= async()=>{
 .input-field {
   padding: 12px 16px;
   font-size: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Semi-transparent border */
+  border: 0px solid rgba(255, 255, 255, 0.5); /* Semi-transparent border */
   border-radius: 12px; /* Rounded corners */
   outline: none;
-  background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  background: rgba(233, 226, 226, 0.39); /* Semi-transparent background */
   color: #333;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }

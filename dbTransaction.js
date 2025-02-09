@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
-const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001']
+const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001','https://bubbles.dahoncho.com']
 // app.use(cors({
 //     origin: 'http://localhost:3001', // Nuxt's dev server port
 //     credentials: true,
@@ -26,6 +26,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions))
 app.use(bodyParser.json());
+app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    next();
+});
 const db = new sqlite3.Database('bubbles.db')
 const dbPath = process.env.DB_PATH
 const hashPassword = async (password) => {
@@ -277,7 +281,7 @@ app.post('/api/create_bubble', async (req, res) => {
     const { userName, content } = req.body;
     if (!userName || !content) {
         console.error('Missing fields')
-        res.status(400).json({
+        return res.status(400).json({
             error: 'missing fields'
         });
     }
@@ -362,7 +366,7 @@ db.close();
 
 })
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0',() => {
+app.listen(PORT,() => {
     console.log(`Server is running on port ${PORT}`);
 });
 
