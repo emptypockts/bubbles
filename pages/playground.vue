@@ -9,7 +9,7 @@
         <button v-if="bubble.username===userName" @click="deleteBubble(bubble.bubble_id)" class="bubble-delete-logo">
           ˗ˏˋ ♡ ˎˊ˗ 
           </button>
-        <p class="bubble-username">
+        <div class="bubble-username">
           <div v-if="bubble.username!==userName">
           {{ bubble.username }} said<br>
           </div>
@@ -22,7 +22,7 @@
               {{ bubble.content }}
             </p>
           </small>
-        </p>
+        </div>
       </div>
     </div>
 
@@ -40,11 +40,11 @@
       </div>
     </div>
     <form @submit.prevent="create_bubble" class="input-container">
-      <textarea v-model="message" label="message" placeholder="200 characters max" class="input-field"/>
+      <textarea v-model="message" label="message" placeholder="150 characters max" class="input-field"/>
 
-      <button type="submit" :disabled="isLoading || message.length>200" class="submit-button">
+      <button type="submit" :disabled="isLoading || message.length>150" class="submit-button">
         post  
-        {{ 200- message.length }} characters left
+        {{ 150- message.length }} characters left
       </button>
     <button v-if="!isLoading" @click="loadMore" class="submit-button">
     load more
@@ -61,7 +61,9 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useNuxtApp, useRuntimeConfig } from '#app';
 import { formatDateAgo } from '#imports';
-
+import websocketClient from '~/plugins/websocket.client';
+const webSocketUrl = 'wss://wss.dahoncho.com';
+const isConnected=ref(false);
 const {$websocket}=useNuxtApp();
 const route = useRouter();
 const isLoading = ref(false);
@@ -84,6 +86,20 @@ const logout = () => {
   route.push('/');
 }
 
+
+
+const connectWebSocket=()=>{
+  console.log('attempting to connect websocket...');
+  $websocket.connect(webSocketUrl,handleNewBubble);
+
+}
+const disconnectWebSocket=()=>{
+  if (isConnected.value){
+    console.log('closing websocket connection');
+    $websocket.close();
+    isConnected.value=false;
+  }
+}
 const create_bubble = async () => {
   isLoading.value = true;
   if (play.value) {
@@ -97,9 +113,10 @@ const create_bubble = async () => {
         }
       })
       console.log('bubble created response :',response.bubble);
+      // handleNewBubble(response.bubble);
       $websocket.send(JSON.stringify(response.bubble))
       // removed this as it is redundant with the websocket line above 👆
-      // handleNewBubble(response.bubble);
+      
       message.value = '';
       isLoading.value = false;
 
@@ -154,22 +171,21 @@ const verifyToken = async () => {
       console.log("valid token found Loading playground for: ", decodeToken.token.username)
       userName.value = decodeToken.token.username
       play.value = true
-
-      isLoading.value = false;
+      
     } else {
       console.error('Token expired :', decodeToken.error)
-      play.value = false;
-      localStorage.clear();
       route.push('/')
-
-
+      localStorage.clear();
+      play.value = false;
     }
   } catch (err) {
     console.error('Token verification error: ', err)
+    route.push('/')
     localStorage.clear();
     play.value = false;
-    route.push('/')
+    
   } finally {
+    console.log('turning off loading status')
     isLoading.value = false;
     
   }
@@ -177,6 +193,7 @@ const verifyToken = async () => {
 
 
 const get_bubbles = async () => {
+  console.log('getting all my bubbles')
   isLoading.value = true;
   try {
     const params = new URLSearchParams({
@@ -185,7 +202,6 @@ const get_bubbles = async () => {
     if (lastLoadedAt.value) {
       params.append("lastLoadedAt", lastLoadedAt.value)
     }
-
     const response = await $fetch(`/api/get_bubbles?${params.toString()}`, {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'GET'
@@ -193,7 +209,7 @@ const get_bubbles = async () => {
     if (response && response.length > 0) {
       const bubblesWithPosition=response.map(bubble=>({
         ...bubble,
-        left:Math.random()*90,
+        left:Math.random()*60,
       }));
       bubbles.value.push(...bubblesWithPosition)
       lastLoadedAt.value = response[response.length - 1].created_at;
@@ -204,16 +220,15 @@ const get_bubbles = async () => {
     isLoading.value = false;
   }
 }
-
 const get_bubbles_all = async () => {
+  console.log('getting all bubbles but mine')
   isLoading.value = true;
   try {
     const params = new URLSearchParams({
       userName: userName.value
     })
-    if (lastLoadedAt.value) {
-      params.append("lastLoadedAt", lastLoadedAt.value)
-
+    if (allLastLoadedAt.value) {
+      params.append("allLastLoadedAt", allLastLoadedAt.value)
     }
     const response = await $fetch(`/api/get_bubbles_all?${params.toString()}`, {
       baseURL: useRuntimeConfig().public.apiBaseURL,
@@ -222,7 +237,7 @@ const get_bubbles_all = async () => {
     if (response && response.length > 0) {
       const bubblesWithPosition=response.map(bubble=>({
         ...bubble,
-        left:Math.random()*90,
+        left:Math.random()*60,
       }));
       allBubbles.value.push(...bubblesWithPosition)
       allLastLoadedAt.value = response[response.length - 1].created_at;
@@ -236,11 +251,22 @@ const get_bubbles_all = async () => {
 
 const get_avatar = async () => {
   try {
+    console.log('getting avatar')
     userAvatar.value = localStorage.getItem('avatar')
   } catch (err) {
     console.error('Error trying to get avatar: ', err)
   }
 };
+
+const broadcast_all_users=async()=>{
+console.log('attempting to send message to socket')
+      $websocket.send(
+        JSON.stringify({
+          type:'new_user',
+          userName:userName.value
+        })
+      )
+}
 
 const handleNewBubble = (newBubble) => {
   newBubble.left=Math.random()*90;
@@ -248,29 +274,29 @@ const handleNewBubble = (newBubble) => {
   console.log('handling new bubble: ',newBubble);
 
 }
-const loadMore = () => {
-  get_bubbles();
-  get_bubbles_all();
-}
+const loadMore = (async() => {
+ await get_bubbles();
+  await get_bubbles_all();
+})
 
 onMounted(async () => {
 
   await verifyToken();
-  get_bubbles();
-  get_bubbles_all();
-  get_avatar();
+
+
+
   if (play.value) {
-    console.log('WebSocket connection attempted');
-    $websocket.connect('ws://localhost:3003',handleNewBubble,userName.value);
-    // $websocket.connect('wss://wss.dahoncho.com',handleNewBubble);
+  console.log('playground access granted. getting all bubbles')
+  connectWebSocket();
+  await get_bubbles();
+  await get_bubbles_all();
+  await get_avatar();
   }
   
 })
 
-onUnmounted(() => {
-  $websocket.close;
-});
 const sortedBubbles = computed(() => {
+  console.log('sorting bubbles')
   const combined = [...bubbles.value, ...allBubbles.value];
 
   return combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map(combined=>({
@@ -294,8 +320,7 @@ const getBubbleStyle = (bubble) => {
 
 .app-container{
   display: flex;
-  justify-content: center;
-  align-items: center;
+  align-items: left;
   background-image:url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Bubble-themed background */
   background-size:cover;
   background-position: center;
@@ -317,16 +342,40 @@ const getBubbleStyle = (bubble) => {
 
 .bubble-form {
   position:fixed;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
+  top:20px;
+  right:20px;
+  display:flex;
+  flex-wrap: wrap;
   align-items: center;
+  max-width: 300px;
+  width: 100%;
+  transition:all 0.3s ease;
   background: rgba(186, 80, 163, 0.356); /* Semi-transparent background */
   padding: 10px;
   border-radius: 24px; /* Rounded corners to match bubbles */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  z-index: 9999;
 }
 
+@media (max-width: 768px) {
+  .bubble-form {
+    max-width: 250px; 
+    padding: 8px; 
+  }
+}
+@media (max-width: 480px) {
+  .bubble-form {
+    max-width: 200px; /* Even smaller for very small screens */
+    top: 10px; /* Adjust position */
+    right: 10px;
+    padding: 5px;
+  }
+  .submit-button {
+    padding: 8px 16px; /* Smaller button padding */
+    font-size: 14px; /* Smaller font size */
+  }
+
+}
 .avatar {
   width: 50px;
   height: 50px;
@@ -337,8 +386,8 @@ const getBubbleStyle = (bubble) => {
 
 .my-bubble {
   position: relative;
-  width: 250px;
-  height: 250px;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
   background: radial-gradient(circle at 20% 20%,
       rgba(255, 255, 255, 0.683),
@@ -350,9 +399,7 @@ const getBubbleStyle = (bubble) => {
     0 0 20px rgba(255, 255, 255, 0.5) inset,
     0 0 30px rgba(255, 255, 255, 0.3) inset;
   display: flex;
-  flex-direction: column;
-  /* Stack items vertically */
- 
+  flex-direction:column;
   text-align: center;
   font-size: 14px;
   color: #f90b9ac9;
@@ -383,19 +430,6 @@ const getBubbleStyle = (bubble) => {
   border-radius: 50%;
   transform: rotate(45deg);
   opacity: .1;
-}
-
-/* Float animation */
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-20px) rotate(20deg);
-  }
 }
 
 /* Drift animation */
@@ -434,8 +468,8 @@ const getBubbleStyle = (bubble) => {
 
 .bubble {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   background: radial-gradient(circle at 20% 20%,
       rgba(255, 255, 255, 0.6),
@@ -451,7 +485,7 @@ const getBubbleStyle = (bubble) => {
   /* Stack items vertically */
   justify-content: center;
   /* Vertically align items in the center */
-  align-items: center;
+  align-items: left;
   /* Horizontally align items in the center */
   text-align: center;
   font-size: 14px;
@@ -488,29 +522,16 @@ const getBubbleStyle = (bubble) => {
 
 
 .input-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px; /* Space between input and button */
-  width: 500px;
-  height: 100px;
-  z-index: 2;
+padding:auto;
   
 }
 
 .input-field {
-  padding: 12px 16px; /* Larger padding */
-  font-size: 16px; /* Larger font size */
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Semi-transparent border */
-  border-radius: 24px; /* Rounded corners */
-  outline: none; /* Remove default outline */
-  background: rgba(255, 255, 255, 0.356); /* Semi-transparent background */
-  color: #f9f6f6; /* Dark text color */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
-  flex-direction: row;
-  width:300px;
-  height:auto;
-  
+width:100%;
+box-sizing: border-box;
+overflow: hidden;
+white-space: nowrap;
+text-overflow: ellipsis;
 }
 
 .input-field:focus {
@@ -597,10 +618,7 @@ const getBubbleStyle = (bubble) => {
   background: rgba(250, 101, 242, 0.2); /* Light pink background on hover */
 }
 .bubble-container{
-  position: flex;
-  top:20px;
-  margin-top: 0%;
-  justify-content: center;
+  max-width: 100%;
 }
 
 </style>

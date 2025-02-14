@@ -12,11 +12,11 @@ export default defineNuxtConfig({
         interval:1000,
       },
       allowedHosts:['bubbles.dahoncho.com'],
-      hmr:{
-        clientPort:3001,
-        host:'0.0.0.0'
+      // hmr:{
+      //   clientPort:3001,
+      //   host:'0.0.0.0'
 
-      },
+      // },
       proxy:{
         '/ws': { target: 'ws://localhost:3003', ws: true }, 
         '/api':{
@@ -32,8 +32,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      apiBaseURL: 'http://localhost:3000'//dev
-      // apiBaseURL: 'https://bubbles.dahoncho.com'//prod 
+      // apiBaseURL: 'http://localhost:3000'//dev
+      apiBaseURL: 'https://bubbles.dahoncho.com'//prod 
     },
   },
 });

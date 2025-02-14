@@ -59,7 +59,6 @@ const verifyToken = (token) => {
         return decoded;
     } catch (err) {
         console.error('Token verification error:', err); // Log the error for more details
-        return err;
     }
 };
 
@@ -180,13 +179,12 @@ app.post('/api/verify_token', async (req, res) => {
     }
     try {
         const decodedToken = await verifyToken(token);
-        console.log('decoded token is valid');
         return res.status(200).json({
             message: 'Token is valid',
             token: decodedToken
         });
     } catch (err) {
-        console.error(err.message)
+        console.error('error token',err.message)
         return res.status(400).json({
             error: err.message
         })
@@ -235,7 +233,7 @@ app.get('/api/get_bubbles', async (req, res) => {
         })
     }
 })
-
+// get bubbles all
 app.get('/api/get_bubbles_all', async (req, res) => {
     const { userName, lastLoadedAt } = req.query;
     const params = [userName]
@@ -259,7 +257,7 @@ app.get('/api/get_bubbles_all', async (req, res) => {
         query += `AND created_at < ?`;
         params.push(lastLoadedAt);
     }
-    query += `ORDER BY created_at ASC LIMIT 20`;
+    query += `ORDER BY created_at DESC LIMIT 20`;
     const bubbles = await db.all(query, params)
     try {
         if (bubbles) {

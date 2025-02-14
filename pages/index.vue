@@ -1,5 +1,6 @@
 <template>
-  <html lang="EN">    <div class="login-container">
+  <html lang="EN">    
+    <div class="login-container">
       <div class="login-box">
         <h1 class="login-title">
           bubbles<br>
