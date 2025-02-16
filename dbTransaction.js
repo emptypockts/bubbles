@@ -6,6 +6,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
@@ -214,7 +215,7 @@ app.get('/api/get_bubbles', async (req, res) => {
         query += `AND created_at < ?`;
         params.push(lastLoadedAt);
     }
-    query += `ORDER BY created_at DESC LIMIT 20;`;
+    query += `ORDER BY created_at DESC LIMIT 10;`;
 
     const bubbles = await db.all(query, params)
 
@@ -257,7 +258,7 @@ app.get('/api/get_bubbles_all', async (req, res) => {
         query += `AND created_at < ?`;
         params.push(lastLoadedAt);
     }
-    query += `ORDER BY created_at DESC LIMIT 20`;
+    query += `ORDER BY created_at DESC LIMIT 10`;
     const bubbles = await db.all(query, params)
     try {
         if (bubbles) {
@@ -363,10 +364,47 @@ if (response.changes===0){
 db.close();
 
 })
+
+//connect ai
+
+app.post('/api/ai_riddle', async (req, res) => {
+    const { query } = req.body;
+    const params = [query]
+    if (!query) {
+        console.log('query to ai: ',query)
+        return res.status(400).json({
+            error: 'missing query'
+        });
+    }
+    
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig:{
+            temperature:0.9,
+            topP:0.9
+        }
+     });
+    const prompt = query;
+    const randomElement = Math.random().toString(36).substring(7);
+    const dynamicQuery = `${randomElement} ${prompt}`
+    const result = await model.generateContent(dynamicQuery);
+    console.log('query to ai: ',dynamicQuery)
+    const riddle= result.response.text()
+    console.log(result.response.text());
+    return res.status(200).json({
+        riddle:riddle
+    })
+
+})
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,() => {
     console.log(`Server is running on port ${PORT}`);
+
 });
+
+
 
 
 // Testing section

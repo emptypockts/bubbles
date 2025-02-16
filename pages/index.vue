@@ -76,7 +76,7 @@ const handleLogin= async()=>{
 }
 
 </script>
-<style>
+<style scoped>
 /* Login container with background image */
 .login-container {
   display: flex;
@@ -99,6 +99,7 @@ const handleLogin= async()=>{
   max-width: 400px;
   width: 100%;
   text-align: center;
+  height: auto;
 }
 
 /* Login title */
@@ -119,6 +120,7 @@ const handleLogin= async()=>{
 
 /* Input container */
 .input-container {
+  align-items: center;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -136,6 +138,7 @@ const handleLogin= async()=>{
 
 /* Input field */
 .input-field {
+  align-items: center;
   padding: 12px 16px;
   font-size: 1rem;
   border: 0px solid rgba(255, 255, 255, 0.5); /* Semi-transparent border */
@@ -144,6 +147,7 @@ const handleLogin= async()=>{
   background: rgba(233, 226, 226, 0.39); /* Semi-transparent background */
   color: #333;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  height: auto;
 }
 
 .input-field:focus {
@@ -153,6 +157,7 @@ const handleLogin= async()=>{
 
 /* Submit button */
 .submit-button {
+  align-items: center;
   padding: 12px 24px;
   font-size: 1rem;
   background: radial-gradient(
@@ -167,6 +172,7 @@ const handleLogin= async()=>{
   border-radius: 24px; /* Rounded corners */
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease;
+  width: auto;
 }
 
 .submit-button:disabled {
