@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "start:ws": "node server/websocket.js"
+    "start:ws": "node server/websocket.js",
+    "start": "nuxt start"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -18,12 +19,16 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "express": "^4.21.2",
+    "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^3.0.3",
     "jsonwebtoken": "^9.0.2",
-    "nuxt": "^3.15.4",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "vue": "latest",
     "vue-router": "latest",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nuxt": "^3.15.4"
   }
 }

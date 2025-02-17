@@ -18,9 +18,8 @@
         <div>
         </div>
         <div v-if="loading" class="loading-overlay">
-            <div class="loading-throbber">
-                <div class="spinner"></div>
-                <p>generating riddle... Powered by google Gemini 1.5 flash Please wait...</p>
+            <div class="loading-kaomoji">
+              (｡♥‿♥｡)
             </div>
         </div>
     </div>
@@ -35,6 +34,7 @@ const userMessage = ref('');
 const messages = ref([]);
 const formattedResponse=ref();
 async function riddle() {
+ loading.value=true;
     userMessage.value ="you are an expert in making the funniest riddles for children between 7 to 9 years old. give me 2 riddles in english and 2 in spanish with no answers. renew the riddles everytime I ask you"; 
     if (userMessage.value.trim()) {
         try {
@@ -65,6 +65,8 @@ async function riddle() {
 }
 
 async function joke() {
+  loading.value=true;
+
     userMessage.value ="you are an expert in making the funniest jokes for children between 7 to 9 years old. give me 2 jokes in english and 2 in spanishh. renew the jokes everytime I ask you"; 
     if (userMessage.value.trim()) {
         try {
@@ -95,6 +97,8 @@ async function joke() {
 }
 
 async function fact() {
+  loading.value=true;
+
     userMessage.value ="you are an expert in making the most interesting facts for children between 7 to 9 years old. give me 2 facts in english and 2 in spanish. renew the facts  everytime I ask you"; 
     if (userMessage.value.trim()) {
         try {
@@ -126,6 +130,36 @@ async function fact() {
 
 </script>
 <style>
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-kaomoji {
+  font-size: 40px;
+  color: white;
+  text-align: center;
+  animation: bounce 1.5s infinite;
+}
+
+/* Animation to bounce the kaomoji up and down */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 h1{
   font-size: 20px;
   color: #ffffff;

@@ -107,6 +107,7 @@ const disconnectWebSocket = () => {
   }
 }
 const create_bubble = async () => {
+  await verifyToken();
   isLoading.value = true;
   if (play.value) {
     try {
