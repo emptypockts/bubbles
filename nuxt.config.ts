@@ -18,7 +18,9 @@ export default defineNuxtConfig({
 
       // },
       proxy:{
-        '/ws': { target: 'ws://localhost:3003', ws: true }, 
+        '/ws': { 
+          target: 'ws://localhost:3003', 
+          ws: true }, 
         '/api':{
           target:'http://localhost:3000',
           changeOrigin:true,

@@ -2,7 +2,6 @@
   <div class="app-container">
     <meta name="viewport" content="width=device-width, initial-scale=0.5">
     <div v-if="play" class="bubble-container">
-
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
           :class="bubble.username === userName ? 'my-bubble' : 'bubble'">
@@ -55,7 +54,7 @@
       </form>
     </div>
     <div class="riddle-form">
-        <ai />
+        <ai/>
       </div>
   </div>
 </div>
@@ -162,8 +161,7 @@ const deleteBubble = async (bubbleId) => {
 };
 
 const verifyToken = async () => {
-
-  isLoading.value = true;
+isLoading.value = true;
   const token = localStorage.getItem('token');
   try {
     const decodeToken = await $fetch('/api/verify_token', {
@@ -257,11 +255,14 @@ const get_bubbles_all = async () => {
 }
 
 const get_avatar = async () => {
+  isLoading.value = true;
   try {
     console.log('getting avatar')
     userAvatar.value = localStorage.getItem('avatar')
   } catch (err) {
     console.error('Error trying to get avatar: ', err)
+  }finally{
+    isLoading.value = false;
   }
 };
 
@@ -282,16 +283,15 @@ const handleNewBubble = (newBubble) => {
 
 }
 const loadMore = (async () => {
+  isLoading.value = true;
   await get_bubbles();
   await get_bubbles_all();
+  isLoading.value = false;
 })
 
 onMounted(async () => {
-
+  isLoading.value = true;
   await verifyToken();
-
-
-
   if (play.value) {
     console.log('playground access granted. getting all bubbles')
     connectWebSocket();
@@ -299,7 +299,7 @@ onMounted(async () => {
     await get_bubbles_all();
     await get_avatar();
   }
-
+  isLoading.value =false;
 })
 
 const sortedBubbles = computed(() => {
