@@ -209,11 +209,11 @@ app.get('/api/get_bubbles', async (req, res) => {
    SELECT *
    FROM bubbles
    WHERE username=?
-   AND created_at >=DATETIME('now','-7 days')
     `;
     if (lastLoadedAt) {
+        console.log('last loaded at for my bubbles: ',decodeURIComponent(lastLoadedAt))
         query += `AND created_at < ?`;
-        params.push(lastLoadedAt);
+        params.push(decodeURIComponent(lastLoadedAt));
     }
     query += `ORDER BY created_at DESC LIMIT 10;`;
 
@@ -236,14 +236,13 @@ app.get('/api/get_bubbles', async (req, res) => {
 })
 // get bubbles all
 app.get('/api/get_bubbles_all', async (req, res) => {
-    const { userName, lastLoadedAt } = req.query;
+    const { userName, allLastLoadedAt } = req.query;
     const params = [userName]
     if (!userName) {
         return res.status(400).json({
             error: 'missing username'
         });
     }
-
     const db = await open({
         filename: dbPath,
         driver: sqlite3.Database
@@ -252,11 +251,11 @@ app.get('/api/get_bubbles_all', async (req, res) => {
         SELECT *
         FROM bubbles
         WHERE username !=?
-        AND created_at >=DATETIME ('now','-7 days')
         `;
-    if (lastLoadedAt) {
+    if (allLastLoadedAt) {
+        console.log('last loaded value for all bubbles but mine:',decodeURIComponent(allLastLoadedAt))
         query += `AND created_at < ?`;
-        params.push(lastLoadedAt);
+        params.push(decodeURIComponent(allLastLoadedAt));
     }
     query += `ORDER BY created_at DESC LIMIT 10`;
     const bubbles = await db.all(query, params)
@@ -398,9 +397,9 @@ app.post('/api/ai_riddle', async (req, res) => {
 
 })
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT,() => {
-    console.log(`Server is running on port ${PORT}`);
+
+app.listen(3000,() => {
+    console.log(`Server is running on port ${3000}`);
 
 });
 

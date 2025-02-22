@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "bubbles",
   "private": true,
   "type": "module",
   "scripts": {
@@ -24,6 +24,7 @@
     "jsonwebtoken": "^9.0.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
+    "vite-plugin-vue-inspector": "^5.3.1",
     "vue": "latest",
     "vue-router": "latest",
     "ws": "^8.18.0"

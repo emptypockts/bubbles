@@ -1,12 +1,12 @@
 <template>
-  <div class="app-container">
+  <div v-if="play" class="app-container">
     <meta name="viewport" content="width=device-width, initial-scale=0.5">
-    <div v-if="play" class="bubble-container">
+    <div class="bubble-container">
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
           :class="bubble.username === userName ? 'my-bubble' : 'bubble'">
-
-          <button v-if="bubble.username === userName" @click="deleteBubble(bubble.bubble_id)" class="bubble-delete-logo">
+          <button v-if="bubble.username === userName" @click="deleteBubble(bubble.bubble_id)"
+            class="bubble-delete-logo">
             ˗ˏˋ ♡ ˎˊ˗
           </button>
           <div class="bubble-username">
@@ -27,39 +27,42 @@
       </div>
 
     </div>
-<div class="forms-container">
-    <div class="bubble-form" >
-      <div class="avatar-container">
-      <img v-if="userAvatar" :src="userAvatar" alt="User Avatar" class="avatar" :title="userName"/>
-      <div class="menu-container">
-        <button class="dots" @click="toggleMenu">
-          &#x22EE;
-        </button>
-      </div>
-        <div v-if="showMenu">
-          <button @click="logout" class="menu-dropdown">logout</button>
+    <div class="forms-container">
+      <div class="bubble-form">
+        <div class="avatar-container">
+          <img v-if="userAvatar" :src="userAvatar" alt="User Avatar" class="avatar" :title="userName" />
+          <div class="menu-container">
+            <button class="dots" @click="toggleMenu">
+              &#x22EE;
+            </button>
+          </div>
+          <div v-if="showMenu">
+            <button @click="logout" class="menu-dropdown">logout</button>
+          </div>
         </div>
+        <form @submit.prevent="create_bubble">
+          <textarea v-model="message" label="message" placeholder="what are you up to?" class="input-field" />
+          <div class="buttons">
+            <button type="submit" :disabled="isLoading || message.length > 80" class="submit-button">
+              post
+              {{ 80 - message.length }} characters left
+            </button>
+            <button @click="loadMore" class="submit-button" :disabled="isLoading">
+              load more
+            </button>
+          </div>
+        </form>
       </div>
-      <form @submit.prevent="create_bubble">
-        <textarea v-model="message" label="message" placeholder="what are you up to?" class="input-field" />
-        <div class="buttons">
-        <button type="submit" :disabled="isLoading || message.length > 150" class="submit-button">
-          post
-          {{ 150 - message.length }} characters left
-        </button>
-        <button v-if="!isLoading" @click="loadMore" class="submit-button">
-          load more
-        </button>
+      <div class="riddle-form">
+        <ai />
       </div>
-      </form>
     </div>
-    <div class="riddle-form">
-        <ai/>
-      </div>
   </div>
-</div>
 </template>
 <script setup>
+useHead({
+  title: 'Bubbles',
+});
 
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -135,6 +138,7 @@ const create_bubble = async () => {
 }
 
 const deleteBubble = async (bubbleId) => {
+  const bubbleSound = new Audio('/bubble.mp3');
   isLoading.value = true;
   console.log('deleting bubbleId', bubbleId)
   console.log('user', userName.value)
@@ -148,9 +152,12 @@ const deleteBubble = async (bubbleId) => {
       }
     })
     console.log('bubble deleted', response)
+    bubbleSound.play().catch(error => console.error("Error playing sound:", error));
+
     console.log(bubbles.value)
     bubbles.value = bubbles.value.filter(bubble => bubble.bubble_id !== bubbleId);
-    console.log('now we have this ', bubbles.value)
+
+
   } catch (err) {
     console.error('error deleting bubble', err)
     isLoading.value = false;
@@ -161,7 +168,7 @@ const deleteBubble = async (bubbleId) => {
 };
 
 const verifyToken = async () => {
-isLoading.value = true;
+  isLoading.value = true;
   const token = localStorage.getItem('token');
   try {
     const decodeToken = await $fetch('/api/verify_token', {
@@ -205,7 +212,8 @@ const get_bubbles = async () => {
       userName: userName.value,
     });
     if (lastLoadedAt.value) {
-      params.append("lastLoadedAt", lastLoadedAt.value)
+      params.append("lastLoadedAt", encodeURIComponent(lastLoadedAt.value))
+
     }
     const response = await $fetch(`/api/get_bubbles?${params.toString()}`, {
       baseURL: useRuntimeConfig().public.apiBaseURL,
@@ -233,18 +241,18 @@ const get_bubbles_all = async () => {
       userName: userName.value
     })
     if (allLastLoadedAt.value) {
-      params.append("allLastLoadedAt", allLastLoadedAt.value)
+      params.append("allLastLoadedAt", encodeURIComponent(allLastLoadedAt.value))
     }
     const response = await $fetch(`/api/get_bubbles_all?${params.toString()}`, {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'GET'
     })
     if (response && response.length > 0) {
-      const bubblesWithPosition = response.map(bubble => ({
+      const allBubblesWithPosition = response.map(bubble => ({
         ...bubble,
         left: Math.random() * 60,
       }));
-      allBubbles.value.push(...bubblesWithPosition)
+      allBubbles.value.push(...allBubblesWithPosition)
       allLastLoadedAt.value = response[response.length - 1].created_at;
     }
   } catch (err) {
@@ -261,7 +269,7 @@ const get_avatar = async () => {
     userAvatar.value = localStorage.getItem('avatar')
   } catch (err) {
     console.error('Error trying to get avatar: ', err)
-  }finally{
+  } finally {
     isLoading.value = false;
   }
 };
@@ -299,8 +307,9 @@ onMounted(async () => {
     await get_bubbles_all();
     await get_avatar();
   }
-  isLoading.value =false;
+  isLoading.value = false;
 })
+
 
 const sortedBubbles = computed(() => {
   console.log('sorting bubbles')
@@ -324,19 +333,21 @@ const getBubbleStyle = (bubble) => {
 
 </script>
 <style>
-.menu-dropdown{
-  color:white;
+.menu-dropdown {
+  color: white;
   background-color: transparent;
   background: transparent;
-  color:rgb(252, 220, 252)
+  color: rgb(252, 220, 252)
 }
-.menu-dropdown:hover{
+
+.menu-dropdown:hover {
   background-color: transparent;
   background: transparent;
   transform: scale(1.1);
-  transition: color,transform 1s ease-in-out;
+  transition: color, transform 1s ease-in-out;
 }
-.buttons{
+
+.buttons {
   display: flex;
   flex-direction: column;
   width: auto;
@@ -345,28 +356,41 @@ const getBubbleStyle = (bubble) => {
 
 .app-container {
   display: flex;
-  flex-direction: row; /* Place children side by side */
-  justify-content: space-between; /* Space out left content and forms container */
-  align-items: flex-start; /* Align items to the top */
+  flex-direction: row;
+  /* Place children side by side */
+  justify-content: space-between;
+  /* Space out left content and forms container */
+  align-items: flex-start;
+  /* Align items to the top */
   background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-  background-size: cover; /* Ensure the background covers the entire container */
-  background-position: center; /* Center the background image */
-  background-repeat: no-repeat; /* Prevent the background from repeating */
+  background-size: cover;
+  /* Ensure the background covers the entire container */
+  background-position: center;
+  /* Center the background image */
+  background-repeat: no-repeat;
+  /* Prevent the background from repeating */
   padding: 20px;
   background-color: rgba(241, 163, 237, 0.071);
-  min-height: 100vh; /* Ensure the container is at least the height of the viewport */
-  height: auto; /* Allow the container to grow with its content */
+  min-height: 100vh;
+  /* Ensure the container is at least the height of the viewport */
+  height: auto;
+  /* Allow the container to grow with its content */
 }
+
 .left-content {
   /* Add styles for your left content here */
-  width: 50%; /* Adjust as needed */
+  width: 50%;
+  /* Adjust as needed */
 }
 
 .forms-container {
   display: flex;
-  flex-direction: column; /* Stack riddle and bubble forms vertically */
-  align-items: flex-end; /* Align forms to the right */
-  gap: 20px; /* Space between riddle and bubble forms */
+  flex-direction: column;
+  /* Stack riddle and bubble forms vertically */
+  align-items: flex-end;
+  /* Align forms to the right */
+  gap: 20px;
+  /* Space between riddle and bubble forms */
 }
 
 .riddle-form {
@@ -374,8 +398,10 @@ const getBubbleStyle = (bubble) => {
   flex-direction: column;
   align-items: flex-start;
   max-width: 300px;
-  background: rgba(233, 163, 248, 0.324); /* Semi-transparent white background */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
+  background: rgba(233, 163, 248, 0.324);
+  /* Semi-transparent white background */
+  backdrop-filter: blur(10px);
+  /* Frosted glass effect */
 
   padding: 10px;
   border-radius: 24px;
@@ -390,8 +416,10 @@ const getBubbleStyle = (bubble) => {
   align-items: flex-start;
   max-width: 300px;
   width: 100%;
-  background: rgba(233, 163, 248, 0.324); /* Semi-transparent white background */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
+  background: rgba(233, 163, 248, 0.324);
+  /* Semi-transparent white background */
+  backdrop-filter: blur(10px);
+  /* Frosted glass effect */
   padding: 10px;
   gap: 20px;
   border-radius: 24px;
@@ -423,6 +451,7 @@ const getBubbleStyle = (bubble) => {
     padding: 8px;
   }
 }
+
 @media (max-width: 480px) {
   .bubble-form {
     max-width: 200px;
@@ -441,23 +470,27 @@ const getBubbleStyle = (bubble) => {
   }
 
 }
-.avatar-container{
-  display:flex;
+
+.avatar-container {
+  display: flex;
   align-items: center;
   position: relative
 }
+
 .avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
-  
+
 }
-.avatar:hover{
+
+.avatar:hover {
   transform: scale(1.1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
+
 .my-bubble {
   position: relative;
   width: 280px;
@@ -475,7 +508,7 @@ const getBubbleStyle = (bubble) => {
   display: flex;
   flex-direction: column;
   text-align: center;
-  font-size: 14px;
+  font-size: 10px;
   color: #f90b9ac9;
   animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
   padding: 10px;
@@ -490,6 +523,7 @@ const getBubbleStyle = (bubble) => {
   /* Ensure it's above bubbles */
 
 }
+
 .my-bubble::before,
 .bubble::before {
   content: '';
@@ -505,6 +539,7 @@ const getBubbleStyle = (bubble) => {
   transform: rotate(45deg);
   opacity: .1;
 }
+
 @keyframes drift {
 
   0%,
@@ -516,6 +551,7 @@ const getBubbleStyle = (bubble) => {
     transform: translateX(100px);
   }
 }
+
 .bubble-username,
 .bubble-date {
   margin: 0;
@@ -525,9 +561,10 @@ const getBubbleStyle = (bubble) => {
   font-size: 16px;
 
 }
+
 .bubble-content {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  font-size: large;
+  font-size: 12px;
   align-items: center;
   justify-items: center;
   padding: 10px;
@@ -535,6 +572,7 @@ const getBubbleStyle = (bubble) => {
   max-width: 90%;
   color: white;
 }
+
 .bubble {
   position: relative;
   width: 250px;
@@ -557,7 +595,7 @@ const getBubbleStyle = (bubble) => {
   align-items: left;
   /* Horizontally align items in the center */
   text-align: center;
-  font-size: 14px;
+  font-size: 10px;
   color: #f90b9ac9;
   animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
   padding: 10px;
@@ -569,6 +607,7 @@ const getBubbleStyle = (bubble) => {
   overflow: hidden;
   /* Ensure content stays within the bubble */
 }
+
 .bubble::before {
   content: '';
   position: absolute;
@@ -583,9 +622,10 @@ const getBubbleStyle = (bubble) => {
   transform: rotate(45deg);
   opacity: 0.4;
 }
-.input-field {  
+
+.input-field {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-display: flex;
+  display: flex;
   width: 280px;
   transition: all 0.3s ease;
   background: rgba(186, 80, 163, 0.356);
@@ -594,20 +634,23 @@ display: flex;
   border-radius: 24px;
   /* Rounded corners to match bubbles */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  color:rgba(255, 255, 255, 0.71);
-  height:100px;
+  color: rgba(255, 255, 255, 0.71);
+  height: 100px;
   color: white;
   margin-bottom: 20px;
 }
-.input-field::placeholder{
+
+.input-field::placeholder {
   color: rgba(255, 255, 255, 0.822);
 }
+
 .input-field:focus {
   border-color: rgba(224, 207, 223, 0.8);
   /* Bubble's pink color */
   box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
   /* Glow effect */
 }
+
 .submit-button {
   position: flex;
   flex-direction: row;
@@ -631,11 +674,13 @@ display: flex;
   /* Smooth transitions */
   z-index: 3;
 }
+
 .submit-button:disabled {
   opacity: 0.6;
   /* Reduce opacity when disabled */
   cursor: not-allowed;
 }
+
 .submit-button:hover:not(:disabled) {
   background: radial-gradient(circle at 30% 30%,
       rgba(255, 255, 255, 0.317),
@@ -646,23 +691,27 @@ display: flex;
   box-shadow: 0 0 10px rgba(238, 182, 235, 0.4);
   /* Glow effect */
 }
+
 .menu-container {
   margin-left: 10px;
 }
-.dots{
-  
+
+.dots {
+
   background-color: transparent;
   background: transparent;
 }
-.dots:hover{
+
+.dots:hover {
   background: transparent;
   background-color: transparent;
   transform: scale(1.8);
-  color:blue;
-  transition: transform,color  1s ease-in-out;
+  color: blue;
+  transition: transform, color 1s ease-in-out;
 }
+
 .bubble-container {
-  display:flex;
+  display: flex;
   flex-direction: row;
   max-width: 100%;
 }

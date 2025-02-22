@@ -13,7 +13,7 @@
         <div class="buttons">
         <button @click="riddle">riddles ∘ ∘ ∘ ( °ヮ° ) ?</button>
         <button @click="joke">jokes (  ≧ᗜ≦)</button>
-        <button @click="fact">facts (⟡ᗜ⟡) !!</button>
+        <button @click="kaomoji">kaomoji ✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩ !!</button>
       </div>
         <div>
         </div>
@@ -35,7 +35,7 @@ const messages = ref([]);
 const formattedResponse=ref();
 async function riddle() {
  loading.value=true;
-    userMessage.value ="you are an expert in making the funniest riddles for children between 7 to 9 years old. give me 2 riddles in english and 2 in spanish with no answers. renew the riddles everytime I ask you"; 
+    userMessage.value ="you are an expert in making the funniest riddles for children between 7 to 9 years old. invent yourself 2 riddles in english and 2 in spanish with no answers. renew the riddles everytime I ask you. remember to invent them don't repeat"; 
     if (userMessage.value.trim()) {
         try {
 
@@ -67,7 +67,7 @@ async function riddle() {
 async function joke() {
   loading.value=true;
 
-    userMessage.value ="you are an expert in making the funniest jokes for children between 7 to 9 years old. give me 2 jokes in english and 2 in spanishh. renew the jokes everytime I ask you"; 
+    userMessage.value ="you are an expert in making the funniest jokes for children between 7 to 9 years old. invent 4 new jokes 2 in english and 2 in spanishh. renew the jokes everytime I ask you. remember to invent them, don't repeat"; 
     if (userMessage.value.trim()) {
         try {
 
@@ -100,6 +100,37 @@ async function fact() {
   loading.value=true;
 
     userMessage.value ="you are an expert in making the most interesting facts for children between 7 to 9 years old. give me 2 facts in english and 2 in spanish. renew the facts  everytime I ask you"; 
+    if (userMessage.value.trim()) {
+        try {
+
+          console.log("Sending query",userMessage.value)
+            console.log("loading status:", loading)
+            const response = await $fetch('/api/ai_riddle', {
+      baseURL: useRuntimeConfig().public.apiBaseURL,
+      method: 'POST',
+      body: {
+        query: userMessage.value,
+      }
+    })
+    
+    formattedResponse.value=response.riddle .replace(/\n/g, '\n').trim();
+    console.log('formatted response',formattedResponse)
+            
+
+        }
+        catch (error) {
+            console.error('Error getting facts', error);
+        }finally{ 
+          loading.value = false;
+          userMessage.value=''
+        }
+    }
+}
+
+async function kaomoji() {
+  loading.value=true;
+
+    userMessage.value ="you are an expert in making the most beautiful elaborated kaomoji for children between 7 to 9 years old. give me  4 kaomojis and explain them  in english and in spanish. renew them anytime I call you"; 
     if (userMessage.value.trim()) {
         try {
 
