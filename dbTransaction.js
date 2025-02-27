@@ -276,13 +276,20 @@ app.get('/api/get_bubbles_all', async (req, res) => {
 })
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
-    const { userName, content } = req.body;
-    if (!userName || !content) {
+    const { userName, content,token } = req.body;
+    if (!userName || !content||!token) {
         console.error('Missing fields')
         return res.status(400).json({
             error: 'missing fields'
         });
     }
+    
+
+        const decodedToken = await verifyToken(token);
+        if (decodedToken){
+            console.log('Token is valid')
+            
+    
 
     const db = await open({
         filename: dbPath,
@@ -324,18 +331,32 @@ app.post('/api/create_bubble', async (req, res) => {
         })
     }
 
+    }
+    else{
+        console.error('error token',err.message)
+        return res.status(400).json({
+            error: err.message
+        })
+    }
+
+
 })
 
 //delete bubble
 
 app.post('/api/delete_bubble',async(req,res)=>{
-    const {userName,bubbleId}=req.body;
-    if (!userName||!bubbleId){
+    const {userName,bubbleId,token}=req.body;
+    if (!userName||!bubbleId||!token){
         console.error('missing fields')
         return res.status(400).json({
             error:'missing fields'
         })
     }
+    const decodedToken = await verifyToken(token);
+    if (decodedToken){
+        console.log('Token is valid')
+        
+
 const db = await open({
     filename:dbPath,
     driver:sqlite3.Database
@@ -361,6 +382,13 @@ if (response.changes===0){
     })
 }
 db.close();
+}
+else{
+    console.error('error token',err.message)
+    return res.status(400).json({
+        error: err.message
+    })
+}
 
 })
 

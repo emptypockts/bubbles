@@ -111,6 +111,7 @@ const disconnectWebSocket = () => {
 const create_bubble = async () => {
   await verifyToken();
   isLoading.value = true;
+  const token = localStorage.getItem('token');
   if (play.value) {
     try {
       const response = await $fetch('api/create_bubble', {
@@ -118,7 +119,8 @@ const create_bubble = async () => {
         method: 'POST',
         body: {
           userName: userName.value,
-          content: message.value
+          content: message.value,
+          token:token
         }
       })
       console.log('bubble created response :', response.bubble);
@@ -138,6 +140,7 @@ const create_bubble = async () => {
 }
 
 const deleteBubble = async (bubbleId) => {
+  const token = localStorage.getItem('token');
   const bubbleSound = new Audio('/bubble.mp3');
   isLoading.value = true;
   console.log('deleting bubbleId', bubbleId)
@@ -148,7 +151,8 @@ const deleteBubble = async (bubbleId) => {
       method: 'POST',
       body: {
         bubbleId: bubbleId,
-        userName: userName.value
+        userName: userName.value,
+        token:token
       }
     })
     console.log('bubble deleted', response)
