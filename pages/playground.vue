@@ -11,6 +11,12 @@
           </button>
           <div class="bubble-username">
             <div v-if="bubble.username !== userName">
+              <img 
+              v-if="avatars[bubble.username]"
+              :src="avatars[bubble.username]"
+              alt="user avatar"
+              class="mini-avatar"
+              :title="bubble.username"/>
               {{ bubble.username }} said<br>
             </div>
             <div v-else>
@@ -82,6 +88,8 @@ const message = ref('');
 const userAvatar = ref(null);
 const lastLoadedAt = ref(null);
 const allLastLoadedAt = ref(null);
+const avatars = ref({});
+
 
 
 const showMenu = ref(false);
@@ -93,9 +101,6 @@ const logout = () => {
   localStorage.clear();
   route.push('/');
 }
-
-
-
 const connectWebSocket = () => {
   console.log('attempting to connect websocket...');
   $websocket.connect(webSocketUrl, handleNewBubble);
@@ -278,6 +283,18 @@ const get_avatar = async () => {
   }
 };
 
+const get_other_avatars = async (userName)=>{
+  if (!avatars.value[userName]){
+
+  try{
+    const response = await $fetch(`/api/other_avatar?userName=${userName}`)
+    avatars.value[userName] = response.avatar;
+  }catch(err){
+    console.log('error trying to get avatar',err)
+
+  }
+}
+}
 const broadcast_all_users = async () => {
   console.log('attempting to send message to socket')
   $websocket.send(
@@ -318,7 +335,10 @@ onMounted(async () => {
 const sortedBubbles = computed(() => {
   console.log('sorting bubbles')
   const combined = [...bubbles.value, ...allBubbles.value];
-
+  combined.forEach(bubble=>{
+    get_other_avatars(bubble.username)
+  })
+  
   return combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map(combined => ({
     ...combined,
     timeAgo: formatDateAgo(combined.created_at)
@@ -488,6 +508,13 @@ const getBubbleStyle = (bubble) => {
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 
+}
+.mini-avatar{
+  width:40px;
+  height:40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2 ease-in-out;
 }
 
 .avatar:hover {

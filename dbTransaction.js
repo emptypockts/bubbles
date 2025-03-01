@@ -114,6 +114,35 @@ app.post('/api/insert_user', async (req, res) => {
 
 
 });
+//api get others avatar
+app.get('/api/other_avatar',async(req,res)=>{
+    const {userName}=req.query;
+    if (!userName){
+        res.status(400).json({
+            error:'missing username'
+        });
+    };
+    const db = await open({
+        filename:dbPath,
+        driver:sqlite3.Database
+    });
+    let query=`
+    SELECT avatar from users where username=?
+    `;
+    const avatar= await db.get(query,userName)
+    
+    if (avatar){
+        console.log('avatar object to return ',avatar)
+        return res.status(200).json(
+        avatar
+        )
+    }
+    else{
+        return res.status(500).json({
+            error:'error trying to fetch avatar'
+        })
+    }
+} )
 // api login 
 app.post('/api/login_user', async (req, res) => {
     const { userName, password } = req.body;
