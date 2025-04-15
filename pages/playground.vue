@@ -216,9 +216,11 @@ const verifyToken = async () => {
 const get_bubbles = async () => {
   console.log('getting all my bubbles')
   isLoading.value = true;
+  const token = localStorage.getItem('token');
   try {
     const params = new URLSearchParams({
       userName: userName.value,
+      token:token
     });
     if (lastLoadedAt.value) {
       params.append("lastLoadedAt", encodeURIComponent(lastLoadedAt.value))
@@ -245,9 +247,11 @@ const get_bubbles = async () => {
 const get_bubbles_all = async () => {
   console.log('getting all bubbles but mine')
   isLoading.value = true;
+  const token = localStorage.getItem('token');
   try {
     const params = new URLSearchParams({
-      userName: userName.value
+      userName: userName.value,
+      token:token
     })
     if (allLastLoadedAt.value) {
       params.append("allLastLoadedAt", encodeURIComponent(allLastLoadedAt.value))

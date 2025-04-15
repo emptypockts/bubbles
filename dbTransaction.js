@@ -222,13 +222,16 @@ app.post('/api/verify_token', async (req, res) => {
 });
 // get bubbles per user
 app.get('/api/get_bubbles', async (req, res) => {
-    const { userName, lastLoadedAt } = req.query;
+    const { userName, lastLoadedAt,token } = req.query;
     const params = [userName]
-    if (!userName) {
+    if (!userName||!token) {
         return res.status(400).json({
             error: 'missing username or token'
         });
     }
+    const decodedToken = await verifyToken(token);
+    if (decodedToken){
+        console.log('Token is valid')
 
     const db = await open({
         filename: dbPath,
@@ -245,9 +248,7 @@ app.get('/api/get_bubbles', async (req, res) => {
         params.push(decodeURIComponent(lastLoadedAt));
     }
     query += `ORDER BY created_at DESC LIMIT 10;`;
-
     const bubbles = await db.all(query, params)
-
     try {
         if (bubbles) {
             console.log('user bubble fetch transaction successful')
@@ -262,16 +263,27 @@ app.get('/api/get_bubbles', async (req, res) => {
             error: 'error trying to fetch bubbles'
         })
     }
+}
+else{
+    console.error('error token',err.message)
+    return res.status(400).json({
+        error: err.message
+    })
+}
 })
 // get bubbles all
 app.get('/api/get_bubbles_all', async (req, res) => {
-    const { userName, allLastLoadedAt } = req.query;
+    const { userName, allLastLoadedAt,token } = req.query;
     const params = [userName]
-    if (!userName) {
+    if (!userName||!token) {
         return res.status(400).json({
-            error: 'missing username'
+            error: 'missing username or token'
         });
     }
+    const decodedToken = await verifyToken(token);
+    if (decodedToken){
+        console.log('Token is valid')
+
     const db = await open({
         filename: dbPath,
         driver: sqlite3.Database
@@ -301,11 +313,18 @@ app.get('/api/get_bubbles_all', async (req, res) => {
             error: 'error fetching all bubbles'
         })
     }
+}
+    else{
+        console.error('error token',err.message)
+        return res.status(400).json({
+            error: err.message
+        })
+    }
 
 })
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
-    const { userName, content,token } = req.body;
+    const { userName, content,token,group_id } = req.body;
     if (!userName || !content||!token) {
         console.error('Missing fields')
         return res.status(400).json({
@@ -325,14 +344,14 @@ app.post('/api/create_bubble', async (req, res) => {
         driver: sqlite3.Database
     })
     const query = `
-    INSERT INTO bubbles (userName,content,expires_at)
-    VALUES (?,?,?);
+    INSERT INTO bubbles (userName,content,expires_at,group_id)
+    VALUES (?,?,?,?);
     `;
     const currentTime = new Date();
     const expiresAt = new Date(currentTime.getTime() + 2 * 60 * 1000);
     const expiresAtFormatted = expiresAt.toISOString().slice(0, 19).replace('T', ' ');
     try {
-        const result = await db.run(query, [userName, content, expiresAtFormatted])
+        const result = await db.run(query, [userName, content, expiresAtFormatted,group_id])
         if (result.changes < 1) {
             console.error('Error inserting bubble: ')
             return res.status(400).json({
@@ -343,7 +362,7 @@ app.post('/api/create_bubble', async (req, res) => {
             const bubbleId = result.lastID
 
             const bubbleQuery = `
-        SELECT bubble_id,username, content , created_at, expires_at FROM bubbles WHERE bubble_id =?;
+        SELECT bubble_id,username, content , created_at, expires_at,group_id FROM bubbles WHERE bubble_id =?;
         `;
             const bubble = await db.get(bubbleQuery, [bubbleId]);
             console.log(`bubble inserted successfully with bubbleID ${bubbleId}`)
