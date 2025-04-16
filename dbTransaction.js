@@ -222,11 +222,11 @@ app.post('/api/verify_token', async (req, res) => {
 });
 // get bubbles per user
 app.get('/api/get_bubbles', async (req, res) => {
-    const { userName, lastLoadedAt,token } = req.query;
+    const { userName, lastLoadedAt,token,group_id } = req.query;
     const params = [userName]
-    if (!userName||!token) {
+    if (!userName||!token||!group_id) {
         return res.status(400).json({
-            error: 'missing username or token'
+            error: 'missing username or token or group_id'
         });
     }
     const decodedToken = await verifyToken(token);
@@ -242,12 +242,24 @@ app.get('/api/get_bubbles', async (req, res) => {
    FROM bubbles
    WHERE username=?
     `;
+
+    if (group_id === 'null'){
+        query += `AND group_id IS NULL
+        `;
+
+    }else if(group_id){
+        query+=`AND group_id = ?
+        `;
+        params.push(group_id);
+    }
+
     if (lastLoadedAt) {
         console.log('last loaded at for my bubbles: ',decodeURIComponent(lastLoadedAt))
         query += `AND created_at < ?`;
         params.push(decodeURIComponent(lastLoadedAt));
     }
     query += `ORDER BY created_at DESC LIMIT 10;`;
+    
     const bubbles = await db.all(query, params)
     try {
         if (bubbles) {
@@ -273,11 +285,11 @@ else{
 })
 // get bubbles all
 app.get('/api/get_bubbles_all', async (req, res) => {
-    const { userName, allLastLoadedAt,token } = req.query;
+    const { userName, allLastLoadedAt,token,group_id } = req.query;
     const params = [userName]
-    if (!userName||!token) {
+    if (!userName||!token||!group_id) {
         return res.status(400).json({
-            error: 'missing username or token'
+            error: 'missing username or token or group_id'
         });
     }
     const decodedToken = await verifyToken(token);
@@ -293,12 +305,22 @@ app.get('/api/get_bubbles_all', async (req, res) => {
         FROM bubbles
         WHERE username !=?
         `;
+
+    if (group_id==='null'){
+        query+=`AND group_id is NULL
+        `
+    }else if(group_id){
+        query+= `AND group_id=?
+        `
+        params.push(group_id);
+    }
     if (allLastLoadedAt) {
         console.log('last loaded value for all bubbles but mine:',decodeURIComponent(allLastLoadedAt))
         query += `AND created_at < ?`;
         params.push(decodeURIComponent(allLastLoadedAt));
     }
     query += `ORDER BY created_at DESC LIMIT 10`;
+    console.log(query)
     const bubbles = await db.all(query, params)
     try {
         if (bubbles) {

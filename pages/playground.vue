@@ -89,7 +89,7 @@ const userAvatar = ref(null);
 const lastLoadedAt = ref(null);
 const allLastLoadedAt = ref(null);
 const avatars = ref({});
-
+const group_id=ref(null);
 
 
 const showMenu = ref(false);
@@ -220,7 +220,8 @@ const get_bubbles = async () => {
   try {
     const params = new URLSearchParams({
       userName: userName.value,
-      token:token
+      token:token,
+      group_id:group_id.value
     });
     if (lastLoadedAt.value) {
       params.append("lastLoadedAt", encodeURIComponent(lastLoadedAt.value))
@@ -251,7 +252,8 @@ const get_bubbles_all = async () => {
   try {
     const params = new URLSearchParams({
       userName: userName.value,
-      token:token
+      token:token,
+      group_id:group_id.value
     })
     if (allLastLoadedAt.value) {
       params.append("allLastLoadedAt", encodeURIComponent(allLastLoadedAt.value))
