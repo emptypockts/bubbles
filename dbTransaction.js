@@ -294,7 +294,6 @@ app.get('/api/get_bubbles_all', async (req, res) => {
             params.push(decodeURIComponent(allLastLoadedAt));
         }
         query += `ORDER BY created_at DESC LIMIT 10`;
-        console.log(query)
         const bubbles = await db.all(query, params)
         try {
             if (bubbles) {
@@ -318,64 +317,121 @@ app.get('/api/get_bubbles_all', async (req, res) => {
     }
 })
 //create group_id
-app.post('/api/create_group_id',async(req,res)=>{
-    const {userName,token,name}=req.body;
-    if (!userName|| !token|| !name){
+app.post('/api/create_group_id', async (req, res) => {
+
+    const { userName, token, name } = req.body;
+    if (!userName || !token || !name) {
         console.error('missing fields')
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         });
     }
     const decodeToken = await verifyToken(token);
-    if (decodeToken){
+    if (decodeToken) {
         console.log('token is valid');
         const db = await open({
-            filename:dbPath,
-            driver:sqlite3.Database
+            filename: dbPath,
+            driver: sqlite3.Database
         })
-        const query =`INSERT INTO groups(userName,name)
+        await db.run('PRAGMA foreign_keys = ON');
+        const query = `INSERT INTO groups(userName,name)
         VALUES(?,?);
         `;
-        try{
-            const result = await db.run(query,[userName,name])
-            if (result.changes<1){
+        try {
+            const result = await db.run(query, [userName, name])
+            if (result.changes < 1) {
                 console.error('error trying to insert the group')
                 return res.status(400).json({
-                    error:'error inserting the group'
+                    error: 'error inserting the group'
                 })
-            }else{
+            } else {
                 const group_id = result.lastID
                 console.log(`group id for group ${name} is ${group_id}`)
-                const adminGroupQuery =` INSERT INTO user_groups (userName,group_id)
+                const adminGroupQuery = ` INSERT INTO user_groups (userName,group_id)
                 VALUES (?,?)
                 `;
-                const adminGroupQueryResult = await db.run(adminGroupQuery,[userName,group_id])
-                if (adminGroupQueryResult<1){
+                const adminGroupQueryResult = await db.run(adminGroupQuery, [userName, group_id])
+                if (adminGroupQueryResult < 1) {
                     console.error('error trying to insert the group_id and username')
                     return res.status(400).json({
-                        error:'error inserting the userName and the group'
+                        error: 'error inserting the userName and the group'
                     })
                 }
-                else{
+                else {
                     console.log('group_id and userName inserted')
                     return res.status(200).json({
-                        message:'group_id and userName inserted'
+                        message: 'group_id and userName inserted'
+                    })
+                }
+            }
+        } catch (err) {
+            console.error('error: ', err)
+            return res.status(400).json({
+                error: 'an error occurred trying to insert the group into the db'
+            })
+        }
+    } else {
+        console.error('error in the token validation')
+        return res.status(400).json({
+            error: 'error in the token validation'
+        })
+    }
+})
+//delete group_id
+app.delete('/api/delete_group_id', async (req, res) => {
+    const { userName, token, name } = req.body;
+    if (!userName || !token || !name) {
+        console.error('missing fields');
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys = ON');
+        const query = `SELECT group_id FROM groups
+        WHERE username=? AND name=?
+        `;
+        try {
+            const group = await db.get(query, [userName, name])
+            if (!group) {
+                console.error(`user ${userName}'s group ${name} not found`)
+                return res.status(404).json({
+                    error: 'user and or group not found'
+                })
+            }
+            else {
+            const deleteQuery = `DELETE FROM groups WHERE group_id = ?
+            `;
+                const result = await db.run(deleteQuery, [group.group_id])
+                if (result === 0) {
+                    console.error('group could not be deleted')
+                    return res.status(404).json({
+                        error: 'group could not be deleted'
+                    })
+                }
+                else {
+                    console.log('group has been deleted')
+                    return res.status(200).json({
+                        message: 'group has been deleted'
                     })
                 }
             }
         }catch(err){
-            console.error('error: ',err)
-            return res.status(400).json({
-                error:'an error occurred trying to insert the group into the db'
+            console.error(err);
+            return res.status(500).json({
+                error:'server error'
             })
         }
-    }else{
-        console.error('error in the token validation',err.message)
-        return res.status(400).json({
-            error:'error in the token validation'
-        })
     }
 })
+
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
     const { userName, content, token, group_id } = req.body;
