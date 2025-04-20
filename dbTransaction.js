@@ -401,13 +401,13 @@ app.delete('/api/delete_group_id', async (req, res) => {
         try {
             const group = await db.get(query, [userName, name])
             if (!group) {
-                console.error(`user ${userName}'s group ${name} not found`)
+                console.error(`user ${userName} don't own this group ${name}`)
                 return res.status(404).json({
-                    error: 'user and or group not found'
+                    error: 'user does not own the group'
                 })
             }
             else {
-            const deleteQuery = `DELETE FROM groups WHERE group_id = ?
+                const deleteQuery = `DELETE FROM groups WHERE group_id = ?
             `;
                 const result = await db.run(deleteQuery, [group.group_id])
                 if (result === 0) {
@@ -423,14 +423,139 @@ app.delete('/api/delete_group_id', async (req, res) => {
                     })
                 }
             }
-        }catch(err){
+        } catch (err) {
             console.error(err);
             return res.status(500).json({
-                error:'server error'
+                error: 'server error'
             })
         }
     }
 })
+//add users
+app.put('/api/add_users', async (req, res) => {
+    const { userName, token, name, users } = req.body;
+    if (!userName || !token || !name||!users) {
+        console.error('missing fields');
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys = ON');
+        const query = `SELECT group_id FROM groups
+        WHERE username=? AND name=?
+        `;
+        try {
+            const group = await db.get(query, [userName, name])
+            console.log(group.group_id)
+            if (!group) {
+                console.error(`${userName} doesn't own the group ${name}`)
+                return res.status(404).json({
+                    error: 'you do not own this group'
+                })
+            } 
+            else {
+                for (const user of users) {
+                    try {
+                        const modifyQuery = `INSERT or IGNORE INTO user_groups (username, group_id) VALUES(?,?)
+                        `;
+                        const result = await db.run(modifyQuery, [user, group.group_id])
+                        console.log(result)
+                    } catch (err) {
+                        console.warn(`error trying to add ${user}`, err.message)
+                        return res.status(404).json({
+                            error:'group is not defined'
+                        })
+                    }
+                }
+                console.log('group modified successfully')
+                return res.status(200).json({
+                    message:'group modified successfully'
+                })
+            }
+        }
+        catch (err){
+            console.error('modify group error')
+            res.status(500).json({
+                error:'server error'
+            })
+        }
+    }else{
+        console.error('invalid token')
+        res.status(401).json({
+            error:'invalid token'
+        })
+    }
+
+})
+//delete users
+app.delete('/api/delete_users', async (req, res) => {
+    const { userName, token, name, users } = req.body;
+    if (!userName || !token || !name||!users) {
+        console.error('missing fields');
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys = ON');
+        const query = `SELECT group_id FROM groups
+        WHERE username=? AND name=?
+        `;
+        try {
+            const group = await db.get(query, [userName, name])
+                if (!group) {
+                console.error(`you do not own the group ${name}`)
+                return res.status(404).json({
+                    error: 'you do not own this group'
+                })
+            } 
+            else {
+                for (const user of users) {
+                    try {
+                        const modifyQuery = `DELETE FROM user_groups WHERE username=? AND group_id=?
+                        `;
+                        const result = await db.run(modifyQuery, [user, group.group_id])
+                    } catch (err) {
+                        console.warn(`error trying to delete ${user}`, err.message)
+                        return res.status(404).json({
+                            error:'error trying to delete the user'
+                        })
+                    }
+                }
+                console.log('group modified successfully')
+                return res.status(200).json({
+                    message:'group modified successfully'
+                })
+            }
+        }
+        catch (err){
+            console.error('modify group error')
+            res.status(500).json({
+                error:'server error'
+            })
+        }
+    }else{
+        console.error('invalid token')
+        res.status(401).json({
+            error:'invalid token'
+        })
+    }
+
+})
+
 
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
