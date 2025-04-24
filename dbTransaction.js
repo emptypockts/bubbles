@@ -555,7 +555,104 @@ app.delete('/api/delete_users', async (req, res) => {
     }
 
 })
+//api get users_group
+app.get('/api/get_users_groups', async(req,res)=>{
+    const {userName,token}=req.query;
+    if (!userName||!token){
+        console.error('missing fields');
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+    const decodeToken=await verifyToken(token);
+    if (decodeToken){
+        console.log('token is valid');
+        const db  = await open({
+            filename:dbPath,
+            driver:sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys = ON');
+        const query =`select * FROM groups WHERE username=?
+        `;
+        try{
+            const groups = await db.all(query,[userName])
+                        if (!groups){
+                console.log('no groups found')
+                return res.status(404).json({
+                    error:'no groups found'
+                })
+            }
+            else{
+                            console.log('groups found!')
+                return res.status(200).json(
+                      groups
+                )
+            }
+        }
+        catch{
+            console.log('error trying to query the db')
+            return res.status(500).json({
+                error:'error querying the db'
+            })
+        }
+    }
+    else{
+        console.log('invalid token')
+        return res.status(401).json({
+            error:'invalid token'
+        })
 
+    }
+})
+
+//api get users per group
+app.get('/api/get_users_from_group',async(req,res)=>{
+    const {userName,group_id,token}=req.query
+    if (!userName||!token||!group_id){
+        console.error('missing fields');
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+    const decodeToken= await verifyToken(token);
+    if (decodeToken){
+        console.log('token is valid')
+        const db = await open({
+            filename:dbPath,
+            driver:sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys= ON');
+        const query=`select * FROM user_groups WHERE group_id=?
+        `;
+        try{
+            const users = await db.all(query,[group_id])
+            if (!users){
+                console.log('no users found')
+                return res.status(404).json({
+                    error:'no users found'
+                })
+            }
+            else{
+                console.log('users found!')
+                return res.status(200).json(
+                    users
+                )
+            }
+        }
+        catch(err){
+            console.log('error trying to query the db',err)
+            return res.status(500).json({
+                error:'error trying to query the db'
+            })
+        }
+    }
+    else{
+        console.log('invalid token')
+        return res.status(401).json({
+            error:'invalid token'
+        })
+    }
+})
 
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {

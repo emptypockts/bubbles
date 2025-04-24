@@ -38,10 +38,13 @@ nitro:{
       },
       allowedHosts:['bubbles.dahoncho.com'],
       hmr:{
-        protocol: "https",
-        host: 'bubbles.dahoncho.com',
-        // clientPort: 3000,
-        // port: 3000,
+        // prod
+        // protocol: "https",
+        // host: 'bubbles.dahoncho.com',
+        
+        // dev
+        clientPort: 3000,
+        port: 3000,
       },
       proxy:{
         '/ws': { 
@@ -59,8 +62,10 @@ nitro:{
   compatibilityDate: '2024-11-01',
   runtimeConfig: {
     public: {
-      // apiBaseURL: 'http://localhost:3000'//dev
-      apiBaseURL: 'https://bubbles.dahoncho.com'//prod 
+      // dev
+      // apiBaseURL: 'http://localhost:3000'
+      //prod 
+      apiBaseURL: 'https://bubbles.dahoncho.com'
     },
   },
 

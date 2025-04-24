@@ -59,11 +59,24 @@
           </div>
         </form>
       </div>
-      <div class="riddle-form">
+      <div class="block-form">
         <ai />
-      </div>
+            </div>
+            <div class="block-form">
+              <h1>Groups (´｡• ᵕ •｡`) </h1>
+            <div v-for="groupName in groupsNames" :key="groupName.group_id">
+              <button @click="modifyGroup(groupName.group_id)"  class="groups">
+                {{ groupName.name }}
+              </button>
+            </div>
+            </div>      
+            <div v-if="groupGui">
+          <groupCenter/>
+        </div>
     </div>
+    
   </div>
+  
 </template>
 <script setup>
 useHead({
@@ -75,6 +88,7 @@ import { useRouter } from 'vue-router';
 import { useNuxtApp, useRuntimeConfig } from '#app';
 import { formatDateAgo } from '#imports';
 import ai from './ai.vue';
+import groupCenter from './groupCenter.vue';
 const webSocketUrl = 'wss://wss.dahoncho.com';
 const isConnected = ref(false);
 const { $websocket } = useNuxtApp();
@@ -90,6 +104,8 @@ const lastLoadedAt = ref(null);
 const allLastLoadedAt = ref(null);
 const avatars = ref({});
 const group_id=ref(null);
+const groupGui=ref(false);
+const groupsNames = ref([]);
 
 
 const showMenu = ref(false);
@@ -212,6 +228,41 @@ const verifyToken = async () => {
   }
 };
 
+const modifyGroup= async(group_id)=>{
+
+  groupGui.value=true
+  const userName = localStorage.getItem('userName')
+  console.log('the name of the group id ',group_id);
+  console.log('the username is ',userName);
+}
+
+const get_groups= async()=>{
+  console.log('getting groups')
+  const token = localStorage.getItem('token');
+  const userName= localStorage.getItem('userName')
+  try{
+    const params = new URLSearchParams({
+    userName:userName,
+    token:token
+  })
+    const groupsTable = await $fetch(`/api/get_users_groups?${params.toString()}`,{
+      baseURL:useRuntimeConfig().public.apiBaseURL,
+      method:'GET'
+    });
+    if (groupsTable&&groupsTable.length>0){
+      console.log('groups available',groupsTable)
+      groupsNames.value = groupsTable.map(groupName=>({
+        ...groupName
+      }))
+
+    }
+  }
+  catch (err){
+    console.error('error fetching groups',err)
+
+  }
+}
+
 
 const get_bubbles = async () => {
   console.log('getting all my bubbles')
@@ -225,12 +276,11 @@ const get_bubbles = async () => {
     });
     if (lastLoadedAt.value) {
       params.append("lastLoadedAt", encodeURIComponent(lastLoadedAt.value))
-
     }
     const response = await $fetch(`/api/get_bubbles?${params.toString()}`, {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'GET'
-    })
+    });
     if (response && response.length > 0) {
       const bubblesWithPosition = response.map(bubble => ({
         ...bubble,
@@ -263,6 +313,7 @@ const get_bubbles_all = async () => {
       method: 'GET'
     })
     if (response && response.length > 0) {
+      console.log('response',response)
       const allBubblesWithPosition = response.map(bubble => ({
         ...bubble,
         left: Math.random() * 60,
@@ -333,6 +384,7 @@ onMounted(async () => {
     await get_bubbles();
     await get_bubbles_all();
     await get_avatar();
+    await get_groups();
   }
   isLoading.value = false;
 })
@@ -363,6 +415,27 @@ const getBubbleStyle = (bubble) => {
 
 </script>
 <style>
+
+.groups{
+  padding:100px;
+  padding: 12px 24px;
+  /* Larger padding */
+  font-size: 16px;
+  /* Larger font size */
+  background: radial-gradient(circle at 10% 10%,
+      rgba(255, 255, 255, 0.742),
+      rgba(250, 101, 242, 0.4) 40%,
+      rgba(250, 101, 242, 0.2) 70%,
+      rgba(250, 101, 242, 0.1) 100%);
+  color: #f9f7f8e8;
+  
+  border: 1px;
+  border-radius: 20px;
+  
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  
+}
 .menu-dropdown {
   color: white;
   background-color: transparent;
@@ -423,11 +496,11 @@ const getBubbleStyle = (bubble) => {
   /* Space between riddle and bubble forms */
 }
 
-.riddle-form {
+.block-form {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  max-width: 300px;
+  width: 300px;
   background: rgba(233, 163, 248, 0.324);
   /* Semi-transparent white background */
   backdrop-filter: blur(10px);
@@ -438,6 +511,7 @@ const getBubbleStyle = (bubble) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   color: white;
   height: auto;
+  gap:10px;
 }
 
 .bubble-form {
@@ -549,16 +623,10 @@ const getBubbleStyle = (bubble) => {
   color: #f90b9ac9;
   animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
   padding: 10px;
-  /* Add padding for spacing inside the bubble */
   border: 1px solid rgba(255, 255, 255, 0.5);
-  /* Semi-transparent border */
-  box-sizing: border-box;
-  /* Ensure padding doesn't affect bubble size */
+box-sizing: border-box;
   overflow: hidden;
-  /* Ensure content stays within the bubble */
   z-index: 1;
-  /* Ensure it's above bubbles */
-
 }
 
 .my-bubble::before,
@@ -752,4 +820,6 @@ const getBubbleStyle = (bubble) => {
   flex-direction: row;
   max-width: 100%;
 }
+
+
 </style>
