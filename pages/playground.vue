@@ -1,6 +1,6 @@
 <template>
   <div v-if="play" class="app-container">
-    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="bubble-container">
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
@@ -11,12 +11,8 @@
           </button>
           <div class="bubble-username">
             <div v-if="bubble.username !== userName">
-              <img 
-              v-if="avatars[bubble.username]"
-              :src="avatars[bubble.username]"
-              alt="user avatar"
-              class="mini-avatar"
-              :title="bubble.username"/>
+              <img v-if="avatars[bubble.username]" :src="avatars[bubble.username]" alt="user avatar" class="mini-avatar"
+                :title="bubble.username" />
               {{ bubble.username }} said<br>
             </div>
             <div v-else>
@@ -61,22 +57,20 @@
       </div>
       <div class="block-form">
         <ai />
-            </div>
-            <div class="block-form">
-              <h1>Groups (´｡• ᵕ •｡`) </h1>
-            <div v-for="groupName in groupsNames" :key="groupName.group_id">
-              <button @click="modifyGroup(groupName.group_id)"  class="groups">
-                {{ groupName.name }}
-              </button>
-            </div>
-            </div>      
-            <div v-if="groupGui">
-          <groupCenter/>
+      </div>
+      <div class="block-form">
+        <h1>Groups (´｡• ᵕ •｡`) </h1>
+        <div v-for="groupName in groupsNames" :key="groupName.group_id">
+          <button @click="modifyGroup(groupName.group_id)" class="groups">
+            {{ groupName.name }}
+          </button>
         </div>
+      </div>
+      <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" />
     </div>
-    
   </div>
-  
+
+
 </template>
 <script setup>
 useHead({
@@ -103,12 +97,11 @@ const userAvatar = ref(null);
 const lastLoadedAt = ref(null);
 const allLastLoadedAt = ref(null);
 const avatars = ref({});
-const group_id=ref(null);
-const groupGui=ref(false);
+const group_id = ref(null);
+const groupGui = ref(false);
 const groupsNames = ref([]);
-
-
 const showMenu = ref(false);
+const selectedGroupId = ref(null);
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
@@ -116,19 +109,19 @@ const logout = () => {
   console.log('bye bye')
   localStorage.clear();
   route.push('/');
-}
+};
 const connectWebSocket = () => {
   console.log('attempting to connect websocket...');
   $websocket.connect(webSocketUrl, handleNewBubble);
 
-}
+};
 const disconnectWebSocket = () => {
   if (isConnected.value) {
     console.log('closing websocket connection');
     $websocket.close();
     isConnected.value = false;
   }
-}
+};
 const create_bubble = async () => {
   await verifyToken();
   isLoading.value = true;
@@ -141,7 +134,7 @@ const create_bubble = async () => {
         body: {
           userName: userName.value,
           content: message.value,
-          token:token
+          token: token
         }
       })
       console.log('bubble created response :', response.bubble);
@@ -158,8 +151,7 @@ const create_bubble = async () => {
     }
   }
 
-}
-
+};
 const deleteBubble = async (bubbleId) => {
   const token = localStorage.getItem('token');
   const bubbleSound = new Audio('/bubble.mp3');
@@ -173,7 +165,7 @@ const deleteBubble = async (bubbleId) => {
       body: {
         bubbleId: bubbleId,
         userName: userName.value,
-        token:token
+        token: token
       }
     })
     console.log('bubble deleted', response)
@@ -191,7 +183,6 @@ const deleteBubble = async (bubbleId) => {
   }
 
 };
-
 const verifyToken = async () => {
   isLoading.value = true;
   const token = localStorage.getItem('token');
@@ -227,43 +218,39 @@ const verifyToken = async () => {
 
   }
 };
-
-const modifyGroup= async(group_id)=>{
-
-  groupGui.value=true
-  const userName = localStorage.getItem('userName')
-  console.log('the name of the group id ',group_id);
-  console.log('the username is ',userName);
-}
-
-const get_groups= async()=>{
+const modifyGroup = async (group_id) => {
+  groupGui.value = true
+  userName.value = localStorage.getItem('userName')
+  selectedGroupId.value =group_id
+  console.log('the the group id ', selectedGroupId.value);
+  console.log('the username is ', userName);
+};
+const get_groups = async () => {
   console.log('getting groups')
   const token = localStorage.getItem('token');
-  const userName= localStorage.getItem('userName')
-  try{
+  const userName = localStorage.getItem('userName')
+  try {
     const params = new URLSearchParams({
-    userName:userName,
-    token:token
-  })
-    const groupsTable = await $fetch(`/api/get_users_groups?${params.toString()}`,{
-      baseURL:useRuntimeConfig().public.apiBaseURL,
-      method:'GET'
+      userName: userName,
+      token: token
+    })
+    const groupsTable = await $fetch(`/api/get_users_groups?${params.toString()}`, {
+      baseURL: useRuntimeConfig().public.apiBaseURL,
+      method: 'GET'
     });
-    if (groupsTable&&groupsTable.length>0){
-      console.log('groups available',groupsTable)
-      groupsNames.value = groupsTable.map(groupName=>({
+    if (groupsTable && groupsTable.length > 0) {
+      console.log('groups available', groupsTable)
+      groupsNames.value = groupsTable.map(groupName => ({
         ...groupName
       }))
 
     }
   }
-  catch (err){
-    console.error('error fetching groups',err)
+  catch (err) {
+    console.error('error fetching groups', err)
 
   }
-}
-
-
+};
 const get_bubbles = async () => {
   console.log('getting all my bubbles')
   isLoading.value = true;
@@ -271,8 +258,8 @@ const get_bubbles = async () => {
   try {
     const params = new URLSearchParams({
       userName: userName.value,
-      token:token,
-      group_id:group_id.value
+      token: token,
+      group_id: group_id.value
     });
     if (lastLoadedAt.value) {
       params.append("lastLoadedAt", encodeURIComponent(lastLoadedAt.value))
@@ -294,7 +281,7 @@ const get_bubbles = async () => {
   } finally {
     isLoading.value = false;
   }
-}
+};
 const get_bubbles_all = async () => {
   console.log('getting all bubbles but mine')
   isLoading.value = true;
@@ -302,8 +289,8 @@ const get_bubbles_all = async () => {
   try {
     const params = new URLSearchParams({
       userName: userName.value,
-      token:token,
-      group_id:group_id.value
+      token: token,
+      group_id: group_id.value
     })
     if (allLastLoadedAt.value) {
       params.append("allLastLoadedAt", encodeURIComponent(allLastLoadedAt.value))
@@ -313,7 +300,7 @@ const get_bubbles_all = async () => {
       method: 'GET'
     })
     if (response && response.length > 0) {
-      console.log('response',response)
+      console.log('response', response)
       const allBubblesWithPosition = response.map(bubble => ({
         ...bubble,
         left: Math.random() * 60,
@@ -326,8 +313,7 @@ const get_bubbles_all = async () => {
   } finally {
     isLoading.value = false;
   }
-}
-
+};
 const get_avatar = async () => {
   isLoading.value = true;
   try {
@@ -339,19 +325,16 @@ const get_avatar = async () => {
     isLoading.value = false;
   }
 };
-
-const get_other_avatars = async (userName)=>{
-  if (!avatars.value[userName]){
-
-  try{
-    const response = await $fetch(`/api/other_avatar?userName=${userName}`)
-    avatars.value[userName] = response.avatar;
-  }catch(err){
-    console.log('error trying to get avatar',err)
-
+const get_other_avatars = async (userName) => {
+  if (!avatars.value[userName]) {
+    try {
+      const response = await $fetch(`/api/other_avatar?userName=${userName}`)
+      avatars.value[userName] = response.avatar;
+    } catch (err) {
+      console.log('error trying to get avatar', err)
+    }
   }
-}
-}
+};
 const broadcast_all_users = async () => {
   console.log('attempting to send message to socket')
   $websocket.send(
@@ -360,21 +343,19 @@ const broadcast_all_users = async () => {
       userName: userName.value
     })
   )
-}
-
+};
 const handleNewBubble = (newBubble) => {
   newBubble.left = Math.random() * 90;
   bubbles.value.push(newBubble);
   console.log('handling new bubble: ', newBubble);
 
-}
+};
 const loadMore = (async () => {
   isLoading.value = true;
   await get_bubbles();
   await get_bubbles_all();
   isLoading.value = false;
-})
-
+});
 onMounted(async () => {
   isLoading.value = true;
   await verifyToken();
@@ -387,37 +368,28 @@ onMounted(async () => {
     await get_groups();
   }
   isLoading.value = false;
-})
-
-
+});
 const sortedBubbles = computed(() => {
   console.log('sorting bubbles')
   const combined = [...bubbles.value, ...allBubbles.value];
-  combined.forEach(bubble=>{
+  combined.forEach(bubble => {
     get_other_avatars(bubble.username)
   })
-  
+
   return combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map(combined => ({
     ...combined,
     timeAgo: formatDateAgo(combined.created_at)
   }))
 });
-
-
-
 const getBubbleStyle = (bubble) => {
   return {
     left: `${bubble.left}%`
   };
 };
-
-
-
 </script>
 <style>
-
-.groups{
-  padding:100px;
+.groups {
+  padding: 100px;
   padding: 12px 24px;
   /* Larger padding */
   font-size: 16px;
@@ -428,14 +400,15 @@ const getBubbleStyle = (bubble) => {
       rgba(250, 101, 242, 0.2) 70%,
       rgba(250, 101, 242, 0.1) 100%);
   color: #f9f7f8e8;
-  
+
   border: 1px;
   border-radius: 20px;
-  
+
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease;
-  
+
 }
+
 .menu-dropdown {
   color: white;
   background-color: transparent;
@@ -511,7 +484,7 @@ const getBubbleStyle = (bubble) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   color: white;
   height: auto;
-  gap:10px;
+  gap: 10px;
 }
 
 .bubble-form {
@@ -589,9 +562,10 @@ const getBubbleStyle = (bubble) => {
   transition: transform 0.2s ease-in-out;
 
 }
-.mini-avatar{
-  width:40px;
-  height:40px;
+
+.mini-avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 0.2 ease-in-out;
@@ -624,7 +598,7 @@ const getBubbleStyle = (bubble) => {
   animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
-box-sizing: border-box;
+  box-sizing: border-box;
   overflow: hidden;
   z-index: 1;
 }
@@ -820,6 +794,4 @@ box-sizing: border-box;
   flex-direction: row;
   max-width: 100%;
 }
-
-
 </style>
