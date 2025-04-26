@@ -1,5 +1,5 @@
 <template>
-  <div v-if="play" class="app-container">
+  <div v-if="play" class="app-container" :class="{blurred:groupGui}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="bubble-container">
       <div>
@@ -66,10 +66,12 @@
           </button>
         </div>
       </div>
-      <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" />
+
     </div>
   </div>
-
+  <div class="floating-group-center">
+      <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" @close="groupGui=false"/>
+      </div>
 
 </template>
 <script setup>
@@ -388,6 +390,17 @@ const getBubbleStyle = (bubble) => {
 };
 </script>
 <style>
+.floating-group-center{
+  position: fixed;
+  top:50%;
+  left: 50%;
+  transform:translate(-50%,-50%);
+  background: rgba(black ,0.6);
+  border-radius: 20px;
+  padding: 2rem;
+  z-index: 999;
+  box-shadow: 0 0 20px rgb(white,0.2);
+}
 .groups {
   padding: 100px;
   padding: 12px 24px;
@@ -433,24 +446,21 @@ const getBubbleStyle = (bubble) => {
 .app-container {
   display: flex;
   flex-direction: row;
-  /* Place children side by side */
   justify-content: space-between;
-  /* Space out left content and forms container */
-  align-items: flex-start;
-  /* Align items to the top */
-  background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    align-items: flex-start;
+    background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
   background-size: cover;
-  /* Ensure the background covers the entire container */
-  background-position: center;
-  /* Center the background image */
-  background-repeat: no-repeat;
-  /* Prevent the background from repeating */
-  padding: 20px;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 20px;
   background-color: rgba(241, 163, 237, 0.071);
   min-height: 100vh;
-  /* Ensure the container is at least the height of the viewport */
-  height: auto;
-  /* Allow the container to grow with its content */
+    height: auto;
+  transition:filter 0.3s ease;
+}
+.app-container.blurred {
+  filter: blur(4px);
+  pointer-events: none;
 }
 
 .left-content {

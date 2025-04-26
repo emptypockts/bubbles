@@ -604,7 +604,6 @@ app.get('/api/get_users_groups', async(req,res)=>{
 
     }
 })
-
 //api get users per group
 app.get('/api/get_users_from_group',async(req,res)=>{
     const {userName,group_id,token}=req.query
@@ -634,8 +633,9 @@ app.get('/api/get_users_from_group',async(req,res)=>{
             }
             else{
                 console.log('users found!')
+                const filteredUsers = users.filter(user=>user.username!==userName)
                 return res.status(200).json(
-                    users
+                    filteredUsers
                 )
             }
         }
@@ -653,7 +653,64 @@ app.get('/api/get_users_from_group',async(req,res)=>{
         })
     }
 })
+//api search all users except the ones in the group already
+app.get ('/api/get_users_not_in_group',async(req,res)=>{
+    const {userName,group_id,token}=req.query
+    if (!userName||!token||!group_id){
+        console.error('missing fields')
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+    const decodedToken=verifyToken(token);
+    if (decodedToken){
+        console.log('valid token');
+        const db = await open({
+            filename:dbPath,
+            driver:sqlite3.Database
+        })
 
+     try{
+        await db.run('PRAGMA foreign_keys=ON');
+        const query=`SELECT username FROM users
+        WHERE username !=?
+        AND username NOT IN (
+        SELECT username FROM user_groups WHERE group_id=?)
+        AND (
+        username LIKE ?
+        )
+        LIMIT 20;
+        `;
+        const searchTerm = `%{query}%`;
+        const availableUsers = await db.all(query,[userName,group_id,searchTerm]);
+        if(!availableUsers){
+            console.log('no users found');
+            return res.status(404).json({
+                error:'no users found'
+            })
+        }
+        else{
+            console.log('users found');
+            return res.status(200).json(
+                availableUsers
+            )
+        }
+            
+     }catch (err){
+        console.log('error trying to query the db',err)
+        return res.status(500).json({
+            error:err
+        })
+
+     }
+    }
+    else{
+        console.log('invalid token');
+        return res.status(401).json({
+            error:'invalid token'
+        })
+    }
+})
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
     const { userName, content, token, group_id } = req.body;
