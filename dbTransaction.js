@@ -655,8 +655,8 @@ app.get('/api/get_users_from_group',async(req,res)=>{
 })
 //api search all users except the ones in the group already
 app.get ('/api/get_users_not_in_group',async(req,res)=>{
-    const {userName,group_id,token}=req.query
-    if (!userName||!token||!group_id){
+    const {userName,group_id,token,lookForUser}=req.query
+    if (!userName||!token||!group_id||!lookForUser){
         console.error('missing fields')
         return res.status(400).json({
             error:'missing fields'
@@ -681,7 +681,7 @@ app.get ('/api/get_users_not_in_group',async(req,res)=>{
         )
         LIMIT 20;
         `;
-        const searchTerm = `%{query}%`;
+        const searchTerm = `%${lookForUser}%`;
         const availableUsers = await db.all(query,[userName,group_id,searchTerm]);
         if(!availableUsers){
             console.log('no users found');
@@ -690,7 +690,7 @@ app.get ('/api/get_users_not_in_group',async(req,res)=>{
             })
         }
         else{
-            console.log('users found');
+            console.log('users found',availableUsers);
             return res.status(200).json(
                 availableUsers
             )
