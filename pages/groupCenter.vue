@@ -17,7 +17,7 @@
 placeholder="search for users to invite..."
 class="search-bar"
 />
-<div v-if="loading">
+<div v-if="loading_search">
 searching ...
 </div>
 <div v-for="userNotInGroup in usersNotInGroup" :key="userNotInGroup.username" class="user-item">
@@ -32,7 +32,8 @@ const loading_users=ref (false);
 const loading_search = ref(false);
 const props= defineProps({
     userName:String,
-    group_id:Number
+    group_id:Number,
+    groupName:String
 })
 const groupUsers=ref([]);
 const usersNotInGroup= ref([]);
@@ -90,10 +91,46 @@ const searchUsers=async()=>{
 }
 
 const removeUserFromGroup = async(usernameToRemove)=>{
-
+    try{
+    const response = await $fetch('/api/delete_users',{
+        baseURL:useRuntimeConfig().public.apiBaseURL,
+        method:'DELETE',
+        body:{
+            token:token,
+            userName:props.userName,
+            users:[usernameToRemove],
+            name:props.groupName
+        }   
+    })
+    console.log('user deleted successfully',response)
+    await fetchGroupUsers();
 }
-const inviteUser = async()=>{
+catch (err){
+    console.error('error trying to call the api: ',err)
+}
+}
+    
 
+
+const inviteUser = async(inviteUser)=>{
+
+    try{
+        const response =  await $fetch('/api/add_users',{
+            baseURL:useRuntimeConfig().public.apiBaseURL,
+            method:'PUT',
+            body:{
+                token:token,
+                userName:props.userName,
+                name:props.groupName,
+                users:[inviteUser]
+            }
+        })
+        console.log('invitation to user sent',response)
+        await fetchGroupUsers();
+    }
+    catch(err){
+        console.error('error trying to call the api',err)
+    }
 }
 
 onMounted (async ()=>{

@@ -524,10 +524,15 @@ app.delete('/api/delete_users', async (req, res) => {
             } 
             else {
                 for (const user of users) {
+                    console.log(user)
                     try {
                         const modifyQuery = `DELETE FROM user_groups WHERE username=? AND group_id=?
                         `;
                         const result = await db.run(modifyQuery, [user, group.group_id])
+                        if(result.changes===0){
+                            console.log('user already removed from this group',result)
+                        }
+                        
                     } catch (err) {
                         console.warn(`error trying to delete ${user}`, err.message)
                         return res.status(404).json({
@@ -535,9 +540,9 @@ app.delete('/api/delete_users', async (req, res) => {
                         })
                     }
                 }
-                console.log('group modified successfully')
+                console.log('user deleted successfully')
                 return res.status(200).json({
-                    message:'group modified successfully'
+                    message:'user deleted successfully'
                 })
             }
         }

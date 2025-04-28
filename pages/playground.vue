@@ -61,7 +61,7 @@
       <div class="block-form">
         <h1>Groups (´｡• ᵕ •｡`) </h1>
         <div v-for="groupName in groupsNames" :key="groupName.group_id">
-          <button @click="modifyGroup(groupName.group_id)" class="groups">
+          <button @click="modifyGroup(groupName.group_id,groupName.name)" class="groups">
             {{ groupName.name }}
           </button>
         </div>
@@ -70,7 +70,7 @@
     </div>
   </div>
   <div class="floating-group-center">
-      <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" @close="groupGui=false"/>
+      <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" :groupName="selectedGroupName" @close="groupGui=false"/>
       </div>
 
 </template>
@@ -104,6 +104,7 @@ const groupGui = ref(false);
 const groupsNames = ref([]);
 const showMenu = ref(false);
 const selectedGroupId = ref(null);
+const selectedGroupName=ref(null);
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
@@ -220,12 +221,14 @@ const verifyToken = async () => {
 
   }
 };
-const modifyGroup = async (group_id) => {
+const modifyGroup = async (group_id,groupName) => {
   groupGui.value = true
   userName.value = localStorage.getItem('userName')
   selectedGroupId.value =group_id
+  selectedGroupName.value=groupName;
   console.log('the the group id ', selectedGroupId.value);
-  console.log('the username is ', userName);
+  console.log('the username is ', userName.value);
+  console.log('the group name is',selectedGroupName.value)
 };
 const get_groups = async () => {
   console.log('getting groups')
