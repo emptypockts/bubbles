@@ -60,11 +60,14 @@
       </div>
       <div class="block-form">
         <h1>Groups (´｡• ᵕ •｡`) </h1>
-        <div v-for="groupName in groupsNames" :key="groupName.group_id">
+        <div v-for="groupName in myGroups" :key="groupName.group_id">
           <button @click="modifyGroup(groupName.group_id,groupName.name)" class="groups">
             {{ groupName.name }}
           </button>
         </div>
+        <button @click="backToPlayground()" class="groups">
+          playground
+        </button>
       </div>
 
     </div>
@@ -102,12 +105,24 @@ const avatars = ref({});
 const group_id = ref(null);
 const groupGui = ref(false);
 const groupsNames = ref([]);
+const myGroups= ref([]);
 const showMenu = ref(false);
 const selectedGroupId = ref(null);
 const selectedGroupName=ref(null);
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
+const backToPlayground = async ()=>{
+  group_id.value = null;
+  bubbles.value = [];
+  allBubbles.value = [];
+  lastLoadedAt.value = null;
+  allLastLoadedAt.value = null;
+
+  await get_bubbles();
+  await get_bubbles_all();
+
+}
 const logout = () => {
   console.log('bye bye')
   localStorage.clear();
@@ -137,7 +152,8 @@ const create_bubble = async () => {
         body: {
           userName: userName.value,
           content: message.value,
-          token: token
+          token: token,
+          group_id:group_id.value
         }
       })
       console.log('bubble created response :', response.bubble);
@@ -221,14 +237,47 @@ const verifyToken = async () => {
 
   }
 };
-const modifyGroup = async (group_id,groupName) => {
+const modifyGroup = async (groupId,groupName) => {
   groupGui.value = true
   userName.value = localStorage.getItem('userName')
-  selectedGroupId.value =group_id
+  selectedGroupId.value =groupId;
   selectedGroupName.value=groupName;
+  group_id.value=groupId;
   console.log('the the group id ', selectedGroupId.value);
   console.log('the username is ', userName.value);
-  console.log('the group name is',selectedGroupName.value)
+  console.log('the group name is',selectedGroupName.value);
+  bubbles.value = [];
+  allBubbles.value = [];
+  lastLoadedAt.value = null;
+  allLastLoadedAt.value = null;
+
+  await get_bubbles();
+  await get_bubbles_all();
+};
+const get_my_groups = async()=>{
+  console.log('getting my groups')
+  const token = localStorage.getItem('token');
+  const userName = localStorage.getItem('userName');
+  try{
+    const params = new URLSearchParams({
+      userName:userName,
+      token:token
+    })
+    const response = await $fetch(`/api/get_my_groups?${params.toString()}`,{
+      baseURL:useRuntimeConfig().public.apiBaseURL,
+      method:'GET'
+    });
+    console.log('my groups',response)
+    if (response&&response.length>0){
+      myGroups.value=response.map(myGroup=>({
+        ...myGroup
+      }))
+    }
+  }
+  catch (err){
+    console.error('error trying to call api',err);
+
+  }
 };
 const get_groups = async () => {
   console.log('getting groups')
@@ -370,7 +419,7 @@ onMounted(async () => {
     await get_bubbles();
     await get_bubbles_all();
     await get_avatar();
-    await get_groups();
+    await get_my_groups();
   }
   isLoading.value = false;
 });

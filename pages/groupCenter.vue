@@ -27,7 +27,7 @@ searching ...
 </template>
 <script setup>
 
-import { ref, watch,onMounted } from 'vue';
+import { ref,onMounted } from 'vue';
 const loading_users=ref (false);
 const loading_search = ref(false);
 const props= defineProps({
@@ -109,9 +109,6 @@ catch (err){
     console.error('error trying to call the api: ',err)
 }
 }
-    
-
-
 const inviteUser = async(inviteUser)=>{
 
     try{

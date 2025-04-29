@@ -609,6 +609,57 @@ app.get('/api/get_users_groups', async(req,res)=>{
 
     }
 })
+//api get_my_groups
+app.get ('/api/get_my_groups',async(req,res)=>{
+    const {userName,token}=req.query;
+    if (!userName||!token){
+        console.error('missing fields');
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+    const decodedToken = await verifyToken(token);
+    if (decodedToken){
+        console.log('valid token');
+        const db = await open({
+            filename:dbPath,
+            driver:sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys=ON');
+        const query = `SELECT user_groups.group_id, groups.name
+        FROM user_groups
+        JOIN groups ON user_groups.group_id=groups.group_id
+        WHERE user_groups.username = ?
+        `;
+        try{
+            const groups = await db.all(query,[userName]);
+            if (!groups){
+                console.error('no groups found');
+                return res.status(400).json({
+                    error:'no groups found'
+                })
+            }
+            else{
+                console.log('groups found');
+                return res.status(200).json(
+                    groups
+                )
+            }
+        }
+        catch(err){
+            console.log('error trying to query the db',err);
+            return res.status(500).json({
+                error:'error trying to query the db'
+            })
+        }
+    }
+    else{
+        console.log('invalid token');
+        return res.status(401).json({
+            error:'invalid token'
+        })
+    }
+})
 //api get users per group
 app.get('/api/get_users_from_group',async(req,res)=>{
     const {userName,group_id,token}=req.query
