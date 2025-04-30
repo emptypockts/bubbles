@@ -453,7 +453,6 @@ app.put('/api/add_users', async (req, res) => {
         `;
         try {
             const group = await db.get(query, [userName, name])
-            console.log(group.group_id)
             if (!group) {
                 console.error(`${userName} doesn't own the group ${name}`)
                 return res.status(404).json({
@@ -481,7 +480,7 @@ app.put('/api/add_users', async (req, res) => {
             }
         }
         catch (err){
-            console.error('modify group error')
+            console.error('modify group error',err)
             res.status(500).json({
                 error:'server error'
             })

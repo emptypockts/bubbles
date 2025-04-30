@@ -6,8 +6,10 @@
         users in group
     </h1>
 <div v-for="user in groupUsers" :key="user.username" class="user-item">
+
 {{ user.username }}
-<button @click="removeUserFromGroup(user.username)">❌</button>
+
+<button @click="removeUserFromGroup(user.username)">x</button>
 </div>
 <h1>
     invite to the group
@@ -22,7 +24,7 @@ searching ...
 </div>
 <div v-for="userNotInGroup in usersNotInGroup" :key="userNotInGroup.username" class="user-item">
 {{ userNotInGroup.username}}
-<button @click="inviteUser(userNotInGroup.username)">➕</button>
+<button @click="inviteUser(userNotInGroup.username)">+</button>
 </div>
 </template>
 <script setup>
@@ -138,3 +140,8 @@ await fetchGroupUsers();
 })
 
 </script>
+<style>
+.user-item{
+    color:white;
+}
+</style>
