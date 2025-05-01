@@ -253,9 +253,9 @@ app.get('/api/get_bubbles', async (req, res) => {
         }
     }
     else {
-        console.error('error token', err.message)
+        console.error('error token')
         return res.status(400).json({
-            error: err.message
+            error: 'invalid token'
         })
     }
 })

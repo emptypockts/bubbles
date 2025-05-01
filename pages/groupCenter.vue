@@ -1,4 +1,5 @@
 <template>
+    <div class="block-form">
     <button @click="$emit('close')">
         ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
@@ -17,7 +18,7 @@
 <input v-model="lookForUser"
 @input="searchUsers"
 placeholder="search for users to invite..."
-class="search-bar"
+class="search-field"
 />
 <div v-if="loading_search">
 searching ...
@@ -25,6 +26,7 @@ searching ...
 <div v-for="userNotInGroup in usersNotInGroup" :key="userNotInGroup.username" class="user-item">
 {{ userNotInGroup.username}}
 <button @click="inviteUser(userNotInGroup.username)">+</button>
+</div>
 </div>
 </template>
 <script setup>
@@ -64,7 +66,6 @@ catch(err){
 }
 
 };
-
 const fetchUsersNotInGroup = async ()=>{
     const params = new URLSearchParams({
         userName:props.userName,
@@ -87,11 +88,9 @@ const fetchUsersNotInGroup = async ()=>{
         loading_search.value=false;
     }
 }
-
 const searchUsers=async()=>{
     await fetchUsersNotInGroup();
 }
-
 const removeUserFromGroup = async(usernameToRemove)=>{
     try{
     const response = await $fetch('/api/delete_users',{
@@ -131,12 +130,8 @@ const inviteUser = async(inviteUser)=>{
         console.error('error trying to call the api',err)
     }
 }
-
 onMounted (async ()=>{
 await fetchGroupUsers();
-    
-
-
 })
 
 </script>
@@ -144,4 +139,28 @@ await fetchGroupUsers();
 .user-item{
     color:white;
 }
+
+.search-field {
+  display: flex;
+  width: 280px;
+  transition: all 0.3s ease;
+  background: rgba(186, 80, 163, 0.356);
+  padding: 10px;
+  border-radius: 24px;
+  color: rgba(255, 255, 255, 0.71);
+  height: auto;
+  color: white;
+  margin-bottom: 20px;
+}
+.search-field::placeholder {
+  color: rgba(255, 255, 255, 0.822);
+}
+.search-field:focus {
+  border-color: rgba(224, 207, 223, 0.8);
+  /* Bubble's pink color */
+  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
+  /* Glow effect */
+}
+
+
 </style>

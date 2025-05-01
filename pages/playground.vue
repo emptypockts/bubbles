@@ -61,11 +61,14 @@
       <div class="block-form">
         <h1>Groups (´｡• ᵕ •｡`) </h1>
         <div v-for="groupName in myGroups" :key="groupName.group_id">
-          <button @click="modifyGroup(groupName.group_id,groupName.name)" class="groups">
+          <button  @click="go_to_group(groupName.group_id,groupName.name)" class="groups">
             {{ groupName.name }}
           </button>
+          <button @click="modifyGroup(groupName.group_id,groupName.name)" class="modify-button">
+            ✎﹏
+          </button>
         </div>
-        <button @click="backToPlayground()" class="groups">
+        <button @click="backToPlayground()" class="modify-button">
           playground
         </button>
       </div>
@@ -246,14 +249,18 @@ const modifyGroup = async (groupId,groupName) => {
   console.log('the the group id ', selectedGroupId.value);
   console.log('the username is ', userName.value);
   console.log('the group name is',selectedGroupName.value);
+};
+const go_to_group= async (groupId,groupName)=>{
+  selectedGroupId.value =groupId;
+  selectedGroupName.value=groupName;
+  group_id.value=groupId;
   bubbles.value = [];
   allBubbles.value = [];
   lastLoadedAt.value = null;
   allLastLoadedAt.value = null;
-
   await get_bubbles();
   await get_bubbles_all();
-};
+}
 const get_my_groups = async()=>{
   console.log('getting my groups')
   const token = localStorage.getItem('token');
@@ -473,28 +480,24 @@ const getBubbleStyle = (bubble) => {
   transition: background 0.3s ease, box-shadow 0.3s ease;
 
 }
-
 .menu-dropdown {
   color: white;
   background-color: transparent;
   background: transparent;
   color: rgb(252, 220, 252)
 }
-
 .menu-dropdown:hover {
   background-color: transparent;
   background: transparent;
   transform: scale(1.1);
   transition: color, transform 1s ease-in-out;
 }
-
 .buttons {
   display: flex;
   flex-direction: column;
   width: auto;
   gap: 10px;
 }
-
 .app-container {
   display: flex;
   flex-direction: row;
@@ -514,13 +517,11 @@ const getBubbleStyle = (bubble) => {
   filter: blur(4px);
   pointer-events: none;
 }
-
 .left-content {
   /* Add styles for your left content here */
   width: 50%;
   /* Adjust as needed */
 }
-
 .forms-container {
   display: flex;
   flex-direction: column;
@@ -530,7 +531,6 @@ const getBubbleStyle = (bubble) => {
   gap: 20px;
   /* Space between riddle and bubble forms */
 }
-
 .block-form {
   display: flex;
   flex-direction: column;
@@ -548,7 +548,6 @@ const getBubbleStyle = (bubble) => {
   height: auto;
   gap: 10px;
 }
-
 .bubble-form {
   display: flex;
   flex-direction: column;
@@ -568,29 +567,24 @@ const getBubbleStyle = (bubble) => {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 
 }
-
-
 .bubble-delete-logo {
   size: 10px;
   background: transparent;
   border: transparent;
   color: white;
 }
-
 .bubble-delete-logo:hover {
   color: #1c0101ce;
   opacity: .5;
   cursor: pointer;
 
 }
-
 @media (max-width: 768px) {
   .bubble-form {
     max-width: 250px;
     padding: 8px;
   }
 }
-
 @media (max-width: 480px) {
   .bubble-form {
     max-width: 200px;
@@ -609,13 +603,11 @@ const getBubbleStyle = (bubble) => {
   }
 
 }
-
 .avatar-container {
   display: flex;
   align-items: center;
   position: relative
 }
-
 .avatar {
   width: 50px;
   height: 50px;
@@ -624,7 +616,6 @@ const getBubbleStyle = (bubble) => {
   transition: transform 0.2s ease-in-out;
 
 }
-
 .mini-avatar {
   width: 40px;
   height: 40px;
@@ -632,12 +623,10 @@ const getBubbleStyle = (bubble) => {
   cursor: pointer;
   transition: transform 0.2 ease-in-out;
 }
-
 .avatar:hover {
   transform: scale(1.1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
-
 .my-bubble {
   position: relative;
   width: 280px;
@@ -664,7 +653,6 @@ const getBubbleStyle = (bubble) => {
   overflow: hidden;
   z-index: 1;
 }
-
 .my-bubble::before,
 .bubble::before {
   content: '';
@@ -680,19 +668,15 @@ const getBubbleStyle = (bubble) => {
   transform: rotate(45deg);
   opacity: .1;
 }
-
 @keyframes drift {
-
   0%,
   100% {
     transform: translateX(0);
   }
-
   50% {
     transform: translateX(100px);
   }
 }
-
 .bubble-username,
 .bubble-date {
   margin: 0;
@@ -702,7 +686,6 @@ const getBubbleStyle = (bubble) => {
   font-size: 16px;
 
 }
-
 .bubble-content {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   font-size: 12px;
@@ -713,7 +696,6 @@ const getBubbleStyle = (bubble) => {
   max-width: 90%;
   color: white;
 }
-
 .bubble {
   position: relative;
   width: 250px;
@@ -748,7 +730,6 @@ const getBubbleStyle = (bubble) => {
   overflow: hidden;
   /* Ensure content stays within the bubble */
 }
-
 .bubble::before {
   content: '';
   position: absolute;
@@ -763,7 +744,6 @@ const getBubbleStyle = (bubble) => {
   transform: rotate(45deg);
   opacity: 0.4;
 }
-
 .input-field {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -780,18 +760,15 @@ const getBubbleStyle = (bubble) => {
   color: white;
   margin-bottom: 20px;
 }
-
 .input-field::placeholder {
   color: rgba(255, 255, 255, 0.822);
 }
-
 .input-field:focus {
   border-color: rgba(224, 207, 223, 0.8);
   /* Bubble's pink color */
   box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
   /* Glow effect */
 }
-
 .submit-button {
   position: flex;
   flex-direction: row;
@@ -815,13 +792,11 @@ const getBubbleStyle = (bubble) => {
   /* Smooth transitions */
   z-index: 3;
 }
-
 .submit-button:disabled {
   opacity: 0.6;
   /* Reduce opacity when disabled */
   cursor: not-allowed;
 }
-
 .submit-button:hover:not(:disabled) {
   background: radial-gradient(circle at 30% 30%,
       rgba(255, 255, 255, 0.317),
@@ -832,17 +807,13 @@ const getBubbleStyle = (bubble) => {
   box-shadow: 0 0 10px rgba(238, 182, 235, 0.4);
   /* Glow effect */
 }
-
 .menu-container {
   margin-left: 10px;
 }
-
 .dots {
-
   background-color: transparent;
   background: transparent;
 }
-
 .dots:hover {
   background: transparent;
   background-color: transparent;
@@ -850,10 +821,14 @@ const getBubbleStyle = (bubble) => {
   color: blue;
   transition: transform, color 1s ease-in-out;
 }
-
 .bubble-container {
   display: flex;
   flex-direction: row;
   max-width: 100%;
+}
+.modify-button{
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 </style>

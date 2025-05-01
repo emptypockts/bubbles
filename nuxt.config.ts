@@ -39,12 +39,12 @@ nitro:{
       allowedHosts:['bubbles.dahoncho.com'],
       hmr:{
         // prod
-        // protocol: "https",
-        // host: 'bubbles.dahoncho.com',
+        protocol: "https",
+        host: 'bubbles.dahoncho.com',
         
         // dev
-        clientPort: 3000,
-        port: 3000,
+        // clientPort: 3000,
+        // port: 3000,
       },
       proxy:{
         '/ws': { 
