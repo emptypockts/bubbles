@@ -766,6 +766,67 @@ app.get ('/api/get_users_not_in_group',async(req,res)=>{
         })
     }
 })
+//create invitation
+app.post('/api/v1/invitations', async(req,res)=>{
+    const {userName,group_id,inviteUser,token}=req.body;
+    if (!userName||!group_id||!inviteUser||!token){
+        console.error('missing fields');
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+    if (userName===inviteUser){
+        console.error('cannot invite yourself');
+        return res.status(400).json({
+            error:'cannot invite yourself'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken){
+        console.log('token is valid');
+        const db = await open({
+            filename:dbPath,
+            driver:sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys = ON');
+        const query=` INSERT INTO invitations (group_id,invited_by,invited_user)
+        VALUES (?,?,?)
+        `;
+        try{
+            const result = await db.run(query,[group_id,userName,inviteUser])
+            if (result.changes<1){
+                console.error('error trying to insert record');
+                return res.status(400).json({
+                    error:'error inserting user'
+                })
+            }
+            else{
+                const inviteId = result.lastID;
+                const invite_query = `SELECT invitation_id,group_id,invited_by,invited_user,status,created_at,responded_at 
+                FROM invitations 
+                WHERE invitation_id=?
+                `;
+                const invitation= await db.get(invite_query,[inviteId]);
+                console.log('invitation inserted successfully');
+                return res.status(201).json(
+                    invitation
+                )
+            }
+        }
+        catch(err){
+            console.error('error trying to access db', err)
+            return res.status(500).json({
+                error:'error trying to access the db'
+            })
+        }
+    }
+    else{
+        console.error('invalid token');
+        return res.status(401).json({
+            error:'invalid token'
+        })
+    }
+})
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
     const { userName, content, token, group_id } = req.body;
