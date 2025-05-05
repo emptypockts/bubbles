@@ -41,18 +41,16 @@
 <script setup>
 import {ref} from 'vue';
 import {useRouter} from 'vue-router';
-
-
 const userName= ref('');
 const password = ref('');
 const isLoading=ref(false);
 const errorMessage=ref('');
 const router=useRouter();
-
 const handleLogin= async()=>{
     isLoading.value=true;
     errorMessage.value='';
     try{
+        console.log(useRuntimeConfig().public.apiBaseURL)
         const response = await $fetch('/api/login_user',{
             baseURL:useRuntimeConfig().public.apiBaseURL,
             method:'POST',
@@ -61,7 +59,6 @@ const handleLogin= async()=>{
                 password:password.value
             },
         });
-        console.log(response)
         localStorage.setItem('token',response.token);
         localStorage.setItem('userName',userName.value)
         localStorage.setItem('avatar',response.avatar)

@@ -134,7 +134,6 @@ const logout = () => {
 const connectWebSocket = () => {
   console.log('attempting to connect websocket...');
   $websocket.connect(webSocketUrl, handleNewBubble);
-
 };
 const disconnectWebSocket = () => {
   if (isConnected.value) {
@@ -387,9 +386,15 @@ const get_avatar = async () => {
   }
 };
 const get_other_avatars = async (userName) => {
+  const params= new URLSearchParams({
+    userName:userName
+  });
   if (!avatars.value[userName]) {
     try {
-      const response = await $fetch(`/api/other_avatar?userName=${userName}`)
+      const response = await $fetch(`/api/other_avatar?${params.toString()}`,{
+        baseURL:useRuntimeConfig().public.apiBaseURL,
+        method:'GET'
+      })
       avatars.value[userName] = response.avatar;
     } catch (err) {
       console.log('error trying to get avatar', err)

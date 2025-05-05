@@ -14,7 +14,7 @@ export default defineNuxtConfig({
 nitro:{
   devProxy:{
     '/api':{
-      target:'http://localhost:3000',
+      target:'http://raspberrypi:3000',
       changeOrigin:true,
       secure:false
     },
@@ -30,33 +30,18 @@ nitro:{
 }
   ],
   vite:{
-
     server:{
-      watch:{
-        usePolling:true,
-        interval:1000,
-      },
-      allowedHosts:['bubbles.dahoncho.com'],
-      hmr:{
-        // prod
-        protocol: "https",
-        host: 'bubbles.dahoncho.com',
-        
-        // dev
-        // clientPort: 3000,
-        // port: 3000,
-      },
       proxy:{
-        '/ws': { 
-          target: 'ws://localhost:3003', 
-          ws: true }, 
+        '/ws':{
+          target:'ws://localhost:3003',
+          ws:true
+        },
         '/api':{
-          target:'http://localhost:3000',
+          target:'http://raspberry:3000',
           changeOrigin:true,
           secure:false
         }
-      },
-      
+      }
     }
   },
   compatibilityDate: '2024-11-01',
@@ -65,7 +50,7 @@ nitro:{
       // dev
       // apiBaseURL: 'http://localhost:3000'
       //prod 
-      apiBaseURL: 'https://bubbles.dahoncho.com'
+      apiBaseURL: process.env.API_BASE_URL||'http://raspberrypi:3000'
     },
   },
 
