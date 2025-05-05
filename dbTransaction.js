@@ -7,6 +7,7 @@ import { open } from 'sqlite';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { error } from 'console';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
@@ -434,7 +435,7 @@ app.delete('/api/delete_group_id', async (req, res) => {
 //add users
 app.put('/api/add_users', async (req, res) => {
     const { userName, token, name, users } = req.body;
-    if (!userName || !token || !name||!users) {
+    if (!userName || !token || !name || !users) {
         console.error('missing fields');
         return res.status(400).json({
             error: 'missing fields'
@@ -458,7 +459,7 @@ app.put('/api/add_users', async (req, res) => {
                 return res.status(404).json({
                     error: 'you do not own this group'
                 })
-            } 
+            }
             else {
                 for (const user of users) {
                     try {
@@ -469,26 +470,26 @@ app.put('/api/add_users', async (req, res) => {
                     } catch (err) {
                         console.warn(`error trying to add ${user}`, err.message)
                         return res.status(404).json({
-                            error:'group is not defined'
+                            error: 'group is not defined'
                         })
                     }
                 }
                 console.log('group modified successfully')
                 return res.status(200).json({
-                    message:'group modified successfully'
+                    message: 'group modified successfully'
                 })
             }
         }
-        catch (err){
-            console.error('modify group error',err)
+        catch (err) {
+            console.error('modify group error', err)
             res.status(500).json({
-                error:'server error'
+                error: 'server error'
             })
         }
-    }else{
+    } else {
         console.error('invalid token')
         res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
         })
     }
 
@@ -496,7 +497,7 @@ app.put('/api/add_users', async (req, res) => {
 //delete users
 app.delete('/api/delete_users', async (req, res) => {
     const { userName, token, name, users } = req.body;
-    if (!userName || !token || !name||!users) {
+    if (!userName || !token || !name || !users) {
         console.error('missing fields');
         return res.status(400).json({
             error: 'missing fields'
@@ -515,12 +516,12 @@ app.delete('/api/delete_users', async (req, res) => {
         `;
         try {
             const group = await db.get(query, [userName, name])
-                if (!group) {
+            if (!group) {
                 console.error(`you do not own the group ${name}`)
                 return res.status(404).json({
                     error: 'you do not own this group'
                 })
-            } 
+            }
             else {
                 for (const user of users) {
                     console.log(user)
@@ -528,101 +529,101 @@ app.delete('/api/delete_users', async (req, res) => {
                         const modifyQuery = `DELETE FROM user_groups WHERE username=? AND group_id=?
                         `;
                         const result = await db.run(modifyQuery, [user, group.group_id])
-                        if(result.changes===0){
-                            console.log('user already removed from this group',result)
+                        if (result.changes === 0) {
+                            console.log('user already removed from this group', result)
                         }
-                        
+
                     } catch (err) {
                         console.warn(`error trying to delete ${user}`, err.message)
                         return res.status(404).json({
-                            error:'error trying to delete the user'
+                            error: 'error trying to delete the user'
                         })
                     }
                 }
                 console.log('user deleted successfully')
                 return res.status(200).json({
-                    message:'user deleted successfully'
+                    message: 'user deleted successfully'
                 })
             }
         }
-        catch (err){
+        catch (err) {
             console.error('modify group error')
             res.status(500).json({
-                error:'server error'
+                error: 'server error'
             })
         }
-    }else{
+    } else {
         console.error('invalid token')
         res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
         })
     }
 
 })
 //api get users_group
-app.get('/api/get_users_groups', async(req,res)=>{
-    const {userName,token}=req.query;
-    if (!userName||!token){
+app.get('/api/get_users_groups', async (req, res) => {
+    const { userName, token } = req.query;
+    if (!userName || !token) {
         console.error('missing fields');
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         })
     }
-    const decodeToken=await verifyToken(token);
-    if (decodeToken){
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
         console.log('token is valid');
-        const db  = await open({
-            filename:dbPath,
-            driver:sqlite3.Database
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
         })
         await db.run('PRAGMA foreign_keys = ON');
-        const query =`select * FROM groups WHERE username=?
+        const query = `select * FROM groups WHERE username=?
         `;
-        try{
-            const groups = await db.all(query,[userName])
-                        if (!groups){
+        try {
+            const groups = await db.all(query, [userName])
+            if (!groups) {
                 console.log('no groups found')
                 return res.status(404).json({
-                    error:'no groups found'
+                    error: 'no groups found'
                 })
             }
-            else{
-                            console.log('groups found!')
+            else {
+                console.log('groups found!')
                 return res.status(200).json(
-                      groups
+                    groups
                 )
             }
         }
-        catch{
+        catch {
             console.log('error trying to query the db')
             return res.status(500).json({
-                error:'error querying the db'
+                error: 'error querying the db'
             })
         }
     }
-    else{
+    else {
         console.log('invalid token')
         return res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
         })
 
     }
 })
 //api get_my_groups
-app.get ('/api/get_my_groups',async(req,res)=>{
-    const {userName,token}=req.query;
-    if (!userName||!token){
+app.get('/api/get_my_groups', async (req, res) => {
+    const { userName, token } = req.query;
+    if (!userName || !token) {
         console.error('missing fields');
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         })
     }
     const decodedToken = await verifyToken(token);
-    if (decodedToken){
+    if (decodedToken) {
         console.log('valid token');
         const db = await open({
-            filename:dbPath,
-            driver:sqlite3.Database
+            filename: dbPath,
+            driver: sqlite3.Database
         })
         await db.run('PRAGMA foreign_keys=ON');
         const query = `SELECT user_groups.group_id, groups.name
@@ -630,104 +631,104 @@ app.get ('/api/get_my_groups',async(req,res)=>{
         JOIN groups ON user_groups.group_id=groups.group_id
         WHERE user_groups.username = ?
         `;
-        try{
-            const groups = await db.all(query,[userName]);
-            if (!groups){
+        try {
+            const groups = await db.all(query, [userName]);
+            if (groups.length <1) {
                 console.error('no groups found');
                 return res.status(400).json({
-                    error:'no groups found'
+                    error: 'no groups found'
                 })
             }
-            else{
+            else {
                 console.log('groups found');
                 return res.status(200).json(
                     groups
                 )
             }
         }
-        catch(err){
-            console.log('error trying to query the db',err);
+        catch (err) {
+            console.log('error trying to query the db', err);
             return res.status(500).json({
-                error:'error trying to query the db'
+                error: 'error trying to query the db'
             })
         }
     }
-    else{
+    else {
         console.log('invalid token');
         return res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
         })
     }
 })
 //api get users per group
-app.get('/api/get_users_from_group',async(req,res)=>{
-    const {userName,group_id,token}=req.query
-    if (!userName||!token||!group_id){
+app.get('/api/get_users_from_group', async (req, res) => {
+    const { userName, group_id, token } = req.query
+    if (!userName || !token || !group_id) {
         console.error('missing fields');
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         })
     }
-    const decodeToken= await verifyToken(token);
-    if (decodeToken){
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
         console.log('token is valid')
         const db = await open({
-            filename:dbPath,
-            driver:sqlite3.Database
+            filename: dbPath,
+            driver: sqlite3.Database
         })
         await db.run('PRAGMA foreign_keys= ON');
-        const query=`select * FROM user_groups WHERE group_id=?
+        const query = `select * FROM user_groups WHERE group_id=?
         `;
-        try{
-            const users = await db.all(query,[group_id])
-            if (!users){
+        try {
+            const users = await db.all(query, [group_id])
+            if (!users) {
                 console.log('no users found')
                 return res.status(404).json({
-                    error:'no users found'
+                    error: 'no users found'
                 })
             }
-            else{
+            else {
                 console.log('users found!')
-                const filteredUsers = users.filter(user=>user.username!==userName)
+                const filteredUsers = users.filter(user => user.username !== userName)
                 return res.status(200).json(
                     filteredUsers
                 )
             }
         }
-        catch(err){
-            console.log('error trying to query the db',err)
+        catch (err) {
+            console.log('error trying to query the db', err)
             return res.status(500).json({
-                error:'error trying to query the db'
+                error: 'error trying to query the db'
             })
         }
     }
-    else{
+    else {
         console.log('invalid token')
         return res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
         })
     }
 })
 //api search all users except the ones in the group already
-app.get ('/api/get_users_not_in_group',async(req,res)=>{
-    const {userName,group_id,token,lookForUser}=req.query
-    if (!userName||!token||!group_id||!lookForUser){
+app.get('/api/get_users_not_in_group', async (req, res) => {
+    const { userName, group_id, token, lookForUser } = req.query
+    if (!userName || !token || !group_id || !lookForUser) {
         console.error('missing fields')
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         })
     }
-    const decodedToken=verifyToken(token);
-    if (decodedToken){
+    const decodedToken = verifyToken(token);
+    if (decodedToken) {
         console.log('valid token');
         const db = await open({
-            filename:dbPath,
-            driver:sqlite3.Database
+            filename: dbPath,
+            driver: sqlite3.Database
         })
 
-     try{
-        await db.run('PRAGMA foreign_keys=ON');
-        const query=`SELECT username FROM users
+        try {
+            await db.run('PRAGMA foreign_keys=ON');
+            const query = `SELECT username FROM users
         WHERE username !=?
         AND username NOT IN (
         SELECT username FROM user_groups WHERE group_id=?)
@@ -736,94 +737,215 @@ app.get ('/api/get_users_not_in_group',async(req,res)=>{
         )
         LIMIT 20;
         `;
-        const searchTerm = `%${lookForUser}%`;
-        const availableUsers = await db.all(query,[userName,group_id,searchTerm]);
-        if(!availableUsers){
-            console.log('no users found');
-            return res.status(404).json({
-                error:'no users found'
-            })
-        }
-        else{
-            console.log('users found',availableUsers);
-            return res.status(200).json(
-                availableUsers
-            )
-        }
-            
-     }catch (err){
-        console.log('error trying to query the db',err)
-        return res.status(500).json({
-            error:err
-        })
+            const searchTerm = `%${lookForUser}%`;
+            const availableUsers = await db.all(query, [userName, group_id, searchTerm]);
+            if (!availableUsers) {
+                console.log('no users found');
+                return res.status(404).json({
+                    error: 'no users found'
+                })
+            }
+            else {
+                console.log('users found', availableUsers);
+                return res.status(200).json(
+                    availableUsers
+                )
+            }
 
-     }
+        } catch (err) {
+            console.log('error trying to query the db', err)
+            return res.status(500).json({
+                error: err
+            })
+
+        }
     }
-    else{
+    else {
         console.log('invalid token');
         return res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
         })
     }
 })
 //create invitation
-app.post('/api/v1/invitations', async(req,res)=>{
-    const {userName,group_id,inviteUser,token}=req.body;
-    if (!userName||!group_id||!inviteUser||!token){
+app.post('/api/v1/invitations', async (req, res) => {
+    const { userName, group_id, inviteUser, token } = req.body;
+    if (!userName || !group_id || !inviteUser || !token) {
         console.error('missing fields');
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         })
     }
-    if (userName===inviteUser){
+    if (userName === inviteUser) {
         console.error('cannot invite yourself');
         return res.status(400).json({
-            error:'cannot invite yourself'
+            error: 'cannot invite yourself'
         })
     }
     const decodeToken = await verifyToken(token);
-    if (decodeToken){
+    if (decodeToken) {
         console.log('token is valid');
         const db = await open({
-            filename:dbPath,
-            driver:sqlite3.Database
+            filename: dbPath,
+            driver: sqlite3.Database
         })
         await db.run('PRAGMA foreign_keys = ON');
-        const query=` INSERT INTO invitations (group_id,invited_by,invited_user)
+        const query = ` INSERT INTO invitations (group_id,invited_by,invited_user)
         VALUES (?,?,?)
         `;
-        try{
-            const result = await db.run(query,[group_id,userName,inviteUser])
-            if (result.changes<1){
+        try {
+            const result = await db.run(query, [group_id, userName, inviteUser])
+            if (result.changes < 1) {
                 console.error('error trying to insert record');
                 return res.status(400).json({
-                    error:'error inserting user'
+                    error: 'error inserting user'
                 })
             }
-            else{
+            else {
                 const inviteId = result.lastID;
                 const invite_query = `SELECT invitation_id,group_id,invited_by,invited_user,status,created_at,responded_at 
                 FROM invitations 
                 WHERE invitation_id=?
                 `;
-                const invitation= await db.get(invite_query,[inviteId]);
+                const invitation = await db.get(invite_query, [inviteId]);
                 console.log('invitation inserted successfully');
                 return res.status(201).json(
                     invitation
                 )
             }
         }
-        catch(err){
+        catch (err) {
             console.error('error trying to access db', err)
             return res.status(500).json({
-                error:'error trying to access the db'
+                error: err
             })
         }
     }
-    else{
+    else {
         console.error('invalid token');
         return res.status(401).json({
-            error:'invalid token'
+            error: 'invalid token'
+        })
+    }
+})
+// get invitation
+app.get('/api/v1/invitations', async (req, res) => {
+    const { userName, token } = req.query;
+    if (!userName || !token) {
+        console.error('missing fields');
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+        const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at
+        FROM invitations
+        JOIN groups ON  invitations.group_id=groups.group_id
+        WHERE invitations.invited_user=?
+        ORDER by invitations.created_at DESC
+        `;
+        try {
+            const invitations = await db.all(query, [userName])
+            if (invitations.length > 0) {
+                console.log(invitations);
+                return res.status(200).json(
+                    invitations
+                )
+            }
+            else {
+                console.log('you have no pending invitations')
+                return res.status(200).json({
+                    message: 'no invitations pending'
+                })
+            }
+        }
+        catch (err) {
+            console.error(err);
+            return res.status(500).json({
+                error: err
+            })
+        }
+    }
+    else {
+        console.error('invalid token');
+        return res.status(401).json({
+            error: 'invalid token'
+        })
+    }
+})
+//decline, accept or revoke invitations
+app.patch('/api/v1/invitations', async (req, res) => {
+    const { userName, token, status, invitation_id, group_id } = req.body;
+    if (!userName || !token || !status || !invitation_id || !group_id) {
+        console.error('missing fields')
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+
+        try {
+            await db.run('PRAGMA foreign_keys=ON');
+            await db.run('BEGIN');
+            const query = `UPDATE invitations 
+            SET status=?, responded_at= CURRENT_TIMESTAMP
+            WHERE invitation_id=? AND invited_user=? AND group_id=?
+            `;
+            const response = await db.run(query, [status, invitation_id, userName,group_id]);
+            console.log(response)
+            if (response.changes===0){
+                await db.run('ROLLBACK')
+                console.error('invitation not found');
+                return res.status(404).json({
+                    error:'invitation not found'
+                })
+            }
+            if (status === 'accepted') {
+            console.log('setting up accepted invitation')
+                const queryAccept = `INSERT or IGNORE INTO user_groups (username, group_id) VALUES(?,?)
+            `;
+              const response=  await db.run(queryAccept, [userName, group_id]);
+            }
+            else if(status==='revoked'){
+                const queryRevoke =`DELETE FROM user_groups
+                WHERE username=? AND group_id=?
+                `;
+                const response=   await db.run(queryRevoke,[userName,group_id]);
+            }
+            else if(status==='declined'){
+                console.log('no other transaction needed')
+            }
+            await db.run ('COMMIT');
+            console.log('transaction completed');
+            return res.status(200).json({
+                message:'transaction completed'
+            });
+        }
+        catch (err){
+            await db.run('ROLLBACK')
+            console.error('transaction failed',err);
+            return res.status(500).json({
+                error:'transaction failed'
+            })
+
+         }
+    }
+    else {
+        console.error('invalid token');
+        return res.status(401).json({
+            error: 'invalid token'
         })
     }
 })
