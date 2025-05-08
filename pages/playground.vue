@@ -70,6 +70,9 @@
         </div>
         <button @click="backToPlayground()" class="modify-button">
           playground
+        </button> 
+        <button @click="createGroup()" class="modify-button">
+        create group
         </button>
       </div>
 
@@ -77,6 +80,9 @@
   </div>
   <div class="floating-group-center">
       <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" :groupName="selectedGroupName" @close="groupGui=false"/>
+      </div>
+      <div class="floating-group-center">
+        <createGroupCenter v-if="createGroupGui" :userName="userName" @close="createGroupGui=false"/>
       </div>
 
 </template>
@@ -91,6 +97,7 @@ import { useNuxtApp, useRuntimeConfig } from '#app';
 import { formatDateAgo } from '#imports';
 import ai from './ai.vue';
 import groupCenter from './groupCenter.vue';
+import createGroupCenter from './createGroupCenter.vue';
 const webSocketUrl = 'wss://wss.dahoncho.com';
 const isConnected = ref(false);
 const { $websocket } = useNuxtApp();
@@ -112,6 +119,8 @@ const myGroups= ref([]);
 const showMenu = ref(false);
 const selectedGroupId = ref(null);
 const selectedGroupName=ref(null);
+const createGroupGui=ref(false);
+const groupName=ref();
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
@@ -250,6 +259,10 @@ const modifyGroup = async (groupId,groupName) => {
   console.log('the username is ', userName.value);
   console.log('the group name is',selectedGroupName.value);
 };
+const createGroup = async()=>{
+  createGroupGui.value=true;
+  userName.value=localStorage.getItem('userName');
+}
 const go_to_group= async (groupId,groupName)=>{
   selectedGroupId.value =groupId;
   selectedGroupName.value=groupName;
