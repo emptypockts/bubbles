@@ -65,7 +65,7 @@ nitro:{
       // dev
       // apiBaseURL: 'http://localhost:3000'
       //prod 
-      apiBaseURL: 'https://bubbles.dahoncho.com'
+      apiBaseURL: 'https://backend.dahoncho.com'
     },
   },
 

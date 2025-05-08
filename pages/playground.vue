@@ -402,7 +402,10 @@ const get_avatar = async () => {
 const get_other_avatars = async (userName) => {
   if (!avatars.value[userName]) {
     try {
-      const response = await $fetch(`/api/other_avatar?userName=${userName}`)
+      const response = await $fetch(`/api/other_avatar?userName=${userName}`,{
+        baseURL:useRuntimeConfig().public.apiBaseURL,
+        method:'GET'
+      })
       avatars.value[userName] = response.avatar;
     } catch (err) {
       console.log('error trying to get avatar', err)
