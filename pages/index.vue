@@ -30,8 +30,11 @@
             <button type="submit" :disabled="isLoading" class="submit-button">
               {{ isLoading ? 'Logging in...' : 'Login' }}
             </button>
+            <div class="error-message" v-if="errorMessage">
+            {{ errorMessage }}
           </div>
-          <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
+          </div>
+
         </form>
       </div>
     </div>
@@ -67,7 +70,8 @@ const handleLogin= async()=>{
         localStorage.setItem('avatar',response.avatar)
         router.push('/playground')
     }catch(err){
-        errorMessage.value=err.message||'Login failed';
+       console.log(err);
+       showTempMessage(errorMessage,'oopsie we hit a snag, try again later (｡•́︿•̀｡)',2000);
     }finally{
         isLoading.value=false;
 

@@ -766,6 +766,189 @@ app.get ('/api/get_users_not_in_group',async(req,res)=>{
         })
     }
 })
+//create invitation
+app.post('/api/v1/invitations', async (req, res) => {
+    const { userName, group_id, inviteUser, token } = req.body;
+    console.log(req.body)
+    if (!userName || !group_id || !inviteUser || !token) {
+        console.error('missing fields');
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    if (userName === inviteUser) {
+        console.error('cannot invite yourself');
+        return res.status(400).json({
+            error: 'cannot invite yourself'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+        await db.run('PRAGMA foreign_keys = ON');
+        const query = ` INSERT INTO invitations (group_id,invited_by,invited_user)
+        VALUES (?,?,?)
+        `;
+        try {
+            const result = await db.run(query, [group_id, userName, inviteUser])
+            if (result.changes < 1) {
+                console.error('error trying to insert record');
+                return res.status(400).json({
+                    error: 'error inserting user'
+                })
+            }
+            else {
+                const inviteId = result.lastID;
+                const invite_query = `SELECT invitation_id,group_id,invited_by,invited_user,status,created_at,responded_at 
+                FROM invitations 
+                WHERE invitation_id=?
+                `;
+                const invitation = await db.get(invite_query, [inviteId]);
+                console.log('invitation inserted successfully');
+                return res.status(201).json(
+                    invitation
+                )
+            }
+        }
+        catch (err) {
+            console.error('error trying to access db', err)
+            return res.status(500).json({
+                error: err
+            })
+        }
+    }
+    else {
+        console.error('invalid token');
+        return res.status(401).json({
+            error: 'invalid token'
+        })
+    }
+})
+// get invitation
+app.get('/api/v1/invitations', async (req, res) => {
+    const { userName, token } = req.query;
+    if (!userName || !token) {
+        console.error('missing fields');
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+        const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at
+        FROM invitations
+        JOIN groups ON  invitations.group_id=groups.group_id
+        WHERE invitations.invited_user=?
+        ORDER by invitations.created_at DESC
+        `;
+        try {
+            const invitations = await db.all(query, [userName])
+            if (invitations.length > 0) {
+                console.log(invitations);
+                return res.status(200).json(
+                    invitations
+                )
+            }
+            else {
+                console.log('you have no pending invitations')
+                return res.status(200).json({
+                    message: 'no invitations pending'
+                })
+            }
+        }
+        catch (err) {
+            console.error(err);
+            return res.status(500).json({
+                error: err
+            })
+        }
+    }
+    else {
+        console.error('invalid token');
+        return res.status(401).json({
+            error: 'invalid token'
+        })
+    }
+})
+//decline, accept or revoke invitations
+app.patch('/api/v1/invitations', async (req, res) => {
+    const { userName, token, status, invitation_id, group_id } = req.body;
+    if (!userName || !token || !status || !invitation_id || !group_id) {
+        console.error('missing fields')
+        return res.status(400).json({
+            error: 'missing fields'
+        })
+    }
+    const decodeToken = await verifyToken(token);
+    if (decodeToken) {
+        console.log('token is valid');
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        })
+
+        try {
+            await db.run('PRAGMA foreign_keys=ON');
+            await db.run('BEGIN');
+            const query = `UPDATE invitations 
+            SET status=?, responded_at= CURRENT_TIMESTAMP
+            WHERE invitation_id=? AND invited_user=? AND group_id=?
+            `;
+            const response = await db.run(query, [status, invitation_id, userName,group_id]);
+            console.log(response)
+            if (response.changes===0){
+                await db.run('ROLLBACK')
+                console.error('invitation not found');
+                return res.status(404).json({
+                    error:'invitation not found'
+                })
+            }
+            if (status === 'accepted') {
+            console.log('setting up accepted invitation')
+                const queryAccept = `INSERT or IGNORE INTO user_groups (username, group_id) VALUES(?,?)
+            `;
+              const response=  await db.run(queryAccept, [userName, group_id]);
+            }
+            else if(status==='revoked'){
+                const queryRevoke =`DELETE FROM user_groups
+                WHERE username=? AND group_id=?
+                `;
+                const response=   await db.run(queryRevoke,[userName,group_id]);
+            }
+            else if(status==='declined'){
+                console.log('no other transaction needed')
+            }
+            await db.run ('COMMIT');
+            console.log('transaction completed');
+            return res.status(200).json({
+                message:'transaction completed'
+            });
+        }
+        catch (err){
+            await db.run('ROLLBACK')
+            console.error('transaction failed',err);
+            return res.status(500).json({
+                error:'transaction failed'
+            })
+
+         }
+    }
+    else {
+        console.error('invalid token');
+        return res.status(401).json({
+            error: 'invalid token'
+        })
+    }
+})
 //create a bubble
 app.post('/api/create_bubble', async (req, res) => {
     const { userName, content, token, group_id } = req.body;
@@ -804,8 +987,8 @@ app.post('/api/create_bubble', async (req, res) => {
                 const bubble = await db.get(bubbleQuery, [bubbleId]);
                 console.log(`bubble inserted successfully with bubbleID ${bubbleId}`)
                 return res.status(200).json({
-                    message: 'bubble inserted successfully',
-                    bubble: bubble
+                    type:'bubble',
+                    data: bubble
                 })
             }
         } catch (err) {

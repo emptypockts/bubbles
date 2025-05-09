@@ -60,6 +60,9 @@
       </div>
       <div class="block-form">
         <h1>Groups (´｡• ᵕ •｡`) </h1>
+        <button @click="createGroup()" class="modify-button">
+        create group
+        </button>
         <div v-for="groupName in myGroups" :key="groupName.group_id">
           <button  @click="go_to_group(groupName.group_id,groupName.name)" class="groups">
             {{ groupName.name }}
@@ -71,9 +74,7 @@
         <button @click="backToPlayground()" class="modify-button">
           playground
         </button> 
-        <button @click="createGroup()" class="modify-button">
-        create group
-        </button>
+
       </div>
 
     </div>
@@ -168,9 +169,9 @@ const create_bubble = async () => {
           group_id:group_id.value
         }
       })
-      console.log('bubble created response :', response.bubble);
+      console.log('bubble created response :', response);
       // handleNewBubble(response.bubble);
-      $websocket.send(JSON.stringify(response.bubble))
+      $websocket.send(JSON.stringify(response))
       // removed this as it is redundant with the websocket line above 👆
 
       message.value = '';

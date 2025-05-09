@@ -38,7 +38,8 @@ const createGroup=async ()=>{
     try{
         const response = await $fetch(`/api/get_my_groups?${params.toString()}`,{
             baseURL:useRuntimeConfig().public.apiBaseURL,
-            method:'GET'
+            method:'GET',
+            throwHttpErrors:true
         })
         const groupFilter= response.filter(element=>element.name===groupName.value)
 
@@ -49,11 +50,31 @@ const createGroup=async ()=>{
             
         }
         else{
-            console.log('group doesnt exist please proceed!')
+            console.log('group doesnt exist please proceed!');
+            isLoading.value=false;
+            try{
+                const response = await $fetch('/api/create_group_id',{
+                    baseURL:useRuntimeConfig().public.apiBaseURL,
+                    method:'POST',
+                    body:{
+                        userName:props.userName,
+                        token:token,
+                        name:groupName.value
+                    }
+                })
+            console.log('group created successfully',response)
+            }
+            catch(err){
+                console.error('error trying to create group',err)
+                showTempMessage(errorMessage,'oopsie we hit a snag, try again later (｡•́︿•̀｡)',2000);
+
+            }
+
         }
     }
     catch(err){
         console.error('error trying to call api',err)
+        showTempMessage(errorMessage,'oopsie we hit a snag, try again later (｡•́︿•̀｡)',2000);
     }
     finally{
         

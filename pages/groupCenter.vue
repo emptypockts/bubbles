@@ -43,7 +43,6 @@ const groupUsers=ref([]);
 const usersNotInGroup= ref([]);
 const lookForUser=ref('');
 const token = localStorage.getItem('token')
-
 const fetchGroupUsers= async()=>{
     console.log('getting users')
  loading_users.value=true;
@@ -110,17 +109,17 @@ catch (err){
     console.error('error trying to call the api: ',err)
 }
 }
-const inviteUser = async(inviteUser)=>{
+const inviteUser = async(selectedUser)=>{
 
     try{
-        const response =  await $fetch('/api/add_users',{
+        const response =  await $fetch('/api/v1/invitations',{
             baseURL:useRuntimeConfig().public.apiBaseURL,
-            method:'PUT',
+            method:'POST',
             body:{
                 token:token,
                 userName:props.userName,
-                name:props.groupName,
-                users:[inviteUser]
+                group_id:props.group_id,
+                inviteUser:selectedUser
             }
         })
         console.log('invitation to user sent',response)
