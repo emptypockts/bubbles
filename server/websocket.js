@@ -14,25 +14,36 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('message', (message) => {
-    const data = JSON.parse(message.toString());
-    console.log('this is the data coming from the fcn called message', data)
-    if (data.bubble_id) {
-      console.log('bubble received, sending a message')
+    const object = JSON.parse(message.toString());
+    if (object.type==='bubble') {
+      console.log('object type is a bubble')
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(data));
+          client.send(JSON.stringify(object));
         }
       });
     }
 
-        else if (data.type === 'new_user') {
+        else if (object.type === 'new_user') {
           console.log('user connected', message)
           connectedUsers[ws] = message.userName;
           console.log('connected users are', connectedUsers)
           broadcastUsersList();
         }
-        else if (data.type === 'ping') {
+        else if (object.type === 'ping') {
           console.log('sending ping')
+        }
+        else if (object.type==='invitation'){
+          console.log('this is an invitation')
+          try{
+            wss.clients.forEach((client)=>{
+              if (client.readyState===WebSocket.OPEN){
+                client.send(JSON.stringify(object.data));
+              }
+            });
+          }catch(err){
+            console.error(err);
+          }
         }
 
   });

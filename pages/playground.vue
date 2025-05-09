@@ -143,9 +143,21 @@ const logout = () => {
 };
 const connectWebSocket = () => {
   console.log('attempting to connect websocket...');
-  $websocket.connect(webSocketUrl, handleNewBubble);
+  $websocket.connect(webSocketUrl, defineMessage);
 
 };
+const defineMessage =(event)=>{
+
+  if(event.type==='bubble'){
+      handleNewBubble(event.data);
+
+  }
+  else{
+    console.error('invalid websocket message',event);
+    return;
+  }
+}
+
 const disconnectWebSocket = () => {
   if (isConnected.value) {
     console.log('closing websocket connection');
@@ -169,7 +181,7 @@ const create_bubble = async () => {
           group_id:group_id.value
         }
       })
-      console.log('bubble created response :', response);
+      console.log('bubble created');
       // handleNewBubble(response.bubble);
       $websocket.send(JSON.stringify(response))
       // removed this as it is redundant with the websocket line above 👆

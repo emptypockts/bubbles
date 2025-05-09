@@ -790,6 +790,16 @@ app.post('/api/v1/invitations', async (req, res) => {
             driver: sqlite3.Database
         })
         await db.run('PRAGMA foreign_keys = ON');
+        const checkDuplicateQuery = `SELECT * FROM invitations
+        WHERE group_id=? AND invited_user=? AND invited_by=? AND status=?`
+        const duplicate = await db.get(checkDuplicateQuery,[group_id,inviteUser,userName,'pending'])
+        console.log(duplicate)
+        if (duplicate){
+            console.error('invite already sent');
+            return res.status(409).json({
+                error:'invite already sent'
+            })
+        }
         const query = ` INSERT INTO invitations (group_id,invited_by,invited_user)
         VALUES (?,?,?)
         `;

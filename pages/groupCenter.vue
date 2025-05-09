@@ -32,6 +32,7 @@ searching ...
 <script setup>
 
 import { ref,onMounted } from 'vue';
+const { $websocket } = useNuxtApp();
 const loading_users=ref (false);
 const loading_search = ref(false);
 const props= defineProps({
@@ -124,9 +125,15 @@ const inviteUser = async(selectedUser)=>{
         })
         console.log('invitation to user sent',response)
         await fetchGroupUsers();
+        const inviteObject ={
+            type:'invitation',
+            data:response
+        }
+        $websocket.send(JSON.stringify(inviteObject))
     }
     catch(err){
         console.error('error trying to call the api',err)
+        
     }
 }
 onMounted (async ()=>{
