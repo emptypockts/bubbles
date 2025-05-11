@@ -12,6 +12,7 @@
 
 <button @click="removeUserFromGroup(user.username)">x</button>
 </div>
+
 <h1>
     invite to the group
 </h1>
@@ -20,6 +21,9 @@
 placeholder="search for users to invite..."
 class="search-field"
 />
+<div style="font-size: 14px">
+    (￣▽￣;)ゞ{{ errorMessage }}
+            </div>
 <div v-if="loading_search">
 searching ...
 </div>
@@ -31,10 +35,11 @@ searching ...
 </template>
 <script setup>
 
-import { ref,onMounted } from 'vue';
+import { ref,onMounted, registerRuntimeCompiler } from 'vue';
 const { $websocket } = useNuxtApp();
 const loading_users=ref (false);
 const loading_search = ref(false);
+const errorMessage=ref('');
 const props= defineProps({
     userName:String,
     group_id:Number,
@@ -120,8 +125,8 @@ const inviteUser = async(selectedUser)=>{
                 token:token,
                 userName:props.userName,
                 group_id:props.group_id,
-                inviteUser:selectedUser
-            }
+                inviteUser:selectedUser,
+            },
         })
         console.log('invitation to user sent',response)
         await fetchGroupUsers();
@@ -132,8 +137,8 @@ const inviteUser = async(selectedUser)=>{
         $websocket.send(JSON.stringify(inviteObject))
     }
     catch(err){
-        console.error('error trying to call the api',err)
-        
+        console.error('error trying to call the api')
+        showTempMessage(errorMessage,err.response._data.error,2000);
     }
 }
 onMounted (async ()=>{

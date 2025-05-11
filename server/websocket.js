@@ -15,38 +15,47 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (message) => {
     const object = JSON.parse(message.toString());
-    if (object.type==='bubble') {
-      console.log('object type is a bubble')
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(object));
-        }
-      });
-    }
 
-        else if (object.type === 'new_user') {
-          console.log('user connected', message)
-          connectedUsers[ws] = message.userName;
-          console.log('connected users are', connectedUsers)
-          broadcastUsersList();
-        }
-        else if (object.type === 'ping') {
-          console.log('sending ping')
-        }
-        else if (object.type==='invitation'){
-          console.log('this is an invitation')
-          try{
-            wss.clients.forEach((client)=>{
-              if (client.readyState===WebSocket.OPEN){
-                client.send(JSON.stringify(object.data));
-              }
+    switch (object.type) {
+        case 'bubble':
+            console.log('object type is a bubble');
+            wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(object));
+                }
             });
-          }catch(err){
-            console.error(err);
-          }
-        }
+            break;
 
-  });
+        case 'new_user':
+            console.log('user connected', message);
+            connectedUsers[ws] = message.userName;
+            console.log('connected users are', connectedUsers);
+            broadcastUsersList();
+            break;
+
+        case 'ping':
+            console.log('sending ping');
+            break;
+
+        case 'invitation':
+            console.log('this is an invitation');
+            try {
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify(object.data));
+                    }
+                });
+            } catch (err) {
+                console.error(err);
+            }
+            break;
+
+        default:
+            console.error('Unknown message type:', object.type);
+            break;
+    }
+});
+
   function broadcastUsersList() {
     const users = Object.values(connectedUsers);
     wss.clients.forEach((client) => {

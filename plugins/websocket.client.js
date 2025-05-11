@@ -27,7 +27,7 @@ const bubbleSound = new Audio('/bubble.mp3');
     socket.onmessage = (event) =>{
         const data= JSON.parse(event.data);
         if(onMessageCallback){
-            console.log('onmsessage function called',onMessageCallback)
+            console.log('onmsessage function called')
             bubbleSound.play().catch(error => console.error("Error playing sound:", error));
             onMessageCallback(data);
         }

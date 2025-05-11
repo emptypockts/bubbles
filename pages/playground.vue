@@ -2,6 +2,12 @@
   <div v-if="play" class="app-container" :class="{blurred:groupGui}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="bubble-container">
+      <div v-if="(!selectedGroupName)">
+        <h1 style="font-size: 14px">⋆✴︎˚｡⋆playground⋆✴︎˚｡⋆</h1>
+      </div>
+      <div v-else>
+        <h1 style="font-size: 14px">⋆✴︎˚｡⋆{{ selectedGroupName }}⋆✴︎˚｡⋆</h1>
+      </div>
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
           :class="bubble.username === userName ? 'my-bubble' : 'bubble'">
@@ -121,12 +127,13 @@ const showMenu = ref(false);
 const selectedGroupId = ref(null);
 const selectedGroupName=ref(null);
 const createGroupGui=ref(false);
-const groupName=ref();
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
 const backToPlayground = async ()=>{
   group_id.value = null;
+  selectedGroupId.value=null;
+  selectedGroupName.value=null;
   bubbles.value = [];
   allBubbles.value = [];
   lastLoadedAt.value = null;
@@ -146,17 +153,19 @@ const connectWebSocket = () => {
   $websocket.connect(webSocketUrl, defineMessage);
 
 };
-const defineMessage =(event)=>{
-
-  if(event.type==='bubble'){
-      handleNewBubble(event.data);
-
+const defineMessage = (event) => {
+  switch (event.type) {
+    case 'bubble':
+      if (selectedGroupId.value == event.data.group_id) {
+        console.log('bubble matching group, calling for update')
+        handleNewBubble(event.data);
+      }
+      break;
+    default:
+      console.error('invalid websocket message', event);
+      break;
   }
-  else{
-    console.error('invalid websocket message',event);
-    return;
-  }
-}
+};
 
 const disconnectWebSocket = () => {
   if (isConnected.value) {
@@ -182,10 +191,7 @@ const create_bubble = async () => {
         }
       })
       console.log('bubble created');
-      // handleNewBubble(response.bubble);
       $websocket.send(JSON.stringify(response))
-      // removed this as it is redundant with the websocket line above 👆
-
       message.value = '';
       isLoading.value = false;
 
@@ -277,6 +283,8 @@ const createGroup = async()=>{
   userName.value=localStorage.getItem('userName');
 }
 const go_to_group= async (groupId,groupName)=>{
+  console.log('go to group',groupId);
+  console.log('group callced',groupName);
   selectedGroupId.value =groupId;
   selectedGroupName.value=groupName;
   group_id.value=groupId;

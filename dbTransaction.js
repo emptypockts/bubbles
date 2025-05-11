@@ -310,9 +310,9 @@ app.get('/api/get_bubbles_all', async (req, res) => {
         }
     }
     else {
-        console.error('error token', err.message)
+        console.error('invalid token')
         return res.status(400).json({
-            error: err.message
+            error: 'invalid token'
         })
     }
 })
@@ -1009,9 +1009,9 @@ app.post('/api/create_bubble', async (req, res) => {
         }
     }
     else {
-        console.error('error token', err.message)
+        console.error('error token')
         return res.status(400).json({
-            error: err.message
+            error: 'invalid token'
         })
     }
 })
@@ -1050,9 +1050,9 @@ DELETE FROM bubbles WHERE bubble_id=? AND username =?
         db.close();
     }
     else {
-        console.error('error token', err.message)
+        console.error('error token')
         return res.status(400).json({
-            error: err.message
+            error: 'invalid token'
         })
     }
 })
