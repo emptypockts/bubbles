@@ -22,7 +22,7 @@ placeholder="search for users to invite..."
 class="search-field"
 />
 <div style="font-size: 14px">
-    (￣▽￣;)ゞ{{ errorMessage }}
+    {{ errorMessage }}
             </div>
 <div v-if="loading_search">
 searching ...
@@ -35,7 +35,7 @@ searching ...
 </template>
 <script setup>
 
-import { ref,onMounted, registerRuntimeCompiler } from 'vue';
+import { ref,onMounted } from 'vue';
 const { $websocket } = useNuxtApp();
 const loading_users=ref (false);
 const loading_search = ref(false);
@@ -138,7 +138,7 @@ const inviteUser = async(selectedUser)=>{
     }
     catch(err){
         console.error('error trying to call the api')
-        showTempMessage(errorMessage,err.response._data.error,2000);
+        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
     }
 }
 onMounted (async ()=>{

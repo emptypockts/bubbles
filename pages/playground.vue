@@ -38,7 +38,19 @@
     <div class="forms-container">
       <div class="bubble-form">
         <div class="avatar-container">
-          <img v-if="userAvatar" :src="userAvatar" alt="User Avatar" class="avatar" :title="userName" />
+          <div class="avatar-wrapper">
+          <img 
+          v-if="userAvatar" 
+          :src="userAvatar" 
+          alt="User Avatar" 
+          class="avatar" 
+          :title="userName" 
+          @click="invitationCenterDisp=!invitationCenterDisp"
+          />
+          <span v-if="invitationCount>0" class="badge">
+            {{ invitationCount }}
+          </span>
+        </div>
           <div class="menu-container">
             <button class="dots" @click="toggleMenu">
               &#x22EE;
@@ -91,6 +103,9 @@
       <div class="floating-group-center">
         <createGroupCenter v-if="createGroupGui" :userName="userName" @close="createGroupGui=false"/>
       </div>
+      <div class="floating-group-center">
+        <invitationCenter v-if="invitationCenterDisp" :invitations="userInvitations" @close="invitationCenterDisp=false"/>
+      </div>
 
 </template>
 <script setup>
@@ -105,6 +120,7 @@ import { formatDateAgo } from '#imports';
 import ai from './ai.vue';
 import groupCenter from './groupCenter.vue';
 import createGroupCenter from './createGroupCenter.vue';
+import invitationCenter from './invitationCenter.vue';
 const webSocketUrl = 'wss://wss.dahoncho.com';
 const isConnected = ref(false);
 const { $websocket } = useNuxtApp();
@@ -127,6 +143,9 @@ const showMenu = ref(false);
 const selectedGroupId = ref(null);
 const selectedGroupName=ref(null);
 const createGroupGui=ref(false);
+const invitationCount=ref(0);
+const invitationCenterDisp=ref(false);
+const userInvitations=ref([]);
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
@@ -161,12 +180,15 @@ const defineMessage = (event) => {
         handleNewBubble(event.data);
       }
       break;
+      case 'invitation':
+        console.log('invitation sent!')
+        getInvitations();
+        break;
     default:
       console.error('invalid websocket message', event);
       break;
   }
 };
-
 const disconnectWebSocket = () => {
   if (isConnected.value) {
     console.log('closing websocket connection');
@@ -346,6 +368,28 @@ const get_groups = async () => {
 
   }
 };
+const getInvitations = async ()=>{
+  console.log('pulling invitations');
+  const token =localStorage.getItem('token');
+try{
+  const params = new URLSearchParams({
+    userName:userName.value,
+    token:token
+  })
+  const response = await $fetch(`/api/v1/invitations?${params.toString()}`,{
+    baseURL:useRuntimeConfig().public.apiBaseURL,
+    method:'GET'
+  })
+  userInvitations.value=response;
+  invitationCount.value=response.length;
+
+  console.log('invitations',response.length);
+} 
+catch(err){
+ console.error('erorr trying to fetch invitations',err.response)
+} 
+
+}
 const get_bubbles = async () => {
   console.log('getting all my bubbles')
   isLoading.value = true;
@@ -372,7 +416,8 @@ const get_bubbles = async () => {
       lastLoadedAt.value = response[response.length - 1].created_at;
     }
   } catch (err) {
-    console.error('Error fetching bubbles: ', err)
+    console.error('Error fetching bubbles: ', err.response)
+    route.push('/');
   } finally {
     isLoading.value = false;
   }
@@ -404,7 +449,8 @@ const get_bubbles_all = async () => {
       allLastLoadedAt.value = response[response.length - 1].created_at;
     }
   } catch (err) {
-    console.error('error fetching all user bubbles', err)
+    console.error('error fetching all user bubbles', err.response);
+    route.push('/');
   } finally {
     isLoading.value = false;
   }
@@ -464,6 +510,7 @@ onMounted(async () => {
     await get_bubbles_all();
     await get_avatar();
     await get_my_groups();
+    await getInvitations();
   }
   isLoading.value = false;
 });
@@ -486,6 +533,23 @@ const getBubbleStyle = (bubble) => {
 };
 </script>
 <style>
+.avatar-wrapper{
+  position: relative;
+  display: inline-block;
+}
+.badge{
+  position:absolute;
+  bottom:0;
+  right:0;
+  background-color: red;
+  color:white;
+  font-size: 10px;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
 .floating-group-center{
   position: fixed;
   top:50%;

@@ -863,7 +863,6 @@ app.get('/api/v1/invitations', async (req, res) => {
         try {
             const invitations = await db.all(query, [userName])
             if (invitations.length > 0) {
-                console.log(invitations);
                 return res.status(200).json(
                     invitations
                 )
