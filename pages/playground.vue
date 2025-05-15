@@ -1,5 +1,5 @@
 <template>
-  <div v-if="play" class="app-container" :class="{blurred:groupGui}">
+  <div v-if="play" class="app-container" :class="{blurred:blurrBackground}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="bubble-container">
       <div v-if="(!selectedGroupName)">
@@ -45,7 +45,7 @@
           alt="User Avatar" 
           class="avatar" 
           :title="userName" 
-          @click="invitationCenterDisp=!invitationCenterDisp"
+          @click="modifyInvitation"
           />
           <span v-if="invitationCount>0" class="badge">
             {{ invitationCount }}
@@ -98,13 +98,13 @@
     </div>
   </div>
   <div class="floating-group-center">
-      <groupCenter v-if="groupGui" :group_id="selectedGroupId" :userName="userName" :groupName="selectedGroupName" @close="groupGui=false"/>
+      <groupCenter v-if="guiForm==='modifyGroup'" :group_id="selectedGroupId" :userName="userName" :groupName="selectedGroupName" @close="closeGui"/>
       </div>
       <div class="floating-group-center">
-        <createGroupCenter v-if="createGroupGui" :userName="userName" @close="createGroupGui=false"/>
+        <createGroupCenter v-if="guiForm==='createGroup'" :userName="userName" @close="closeGui"/>
       </div>
       <div class="floating-group-center">
-        <invitationCenter v-if="invitationCenterDisp" :invitations="userInvitations" @close="invitationCenterDisp=false"/>
+        <invitationCenter v-if="guiForm==='modifyInvitation'" :invitations="userInvitations" @close="closeGui"/>
       </div>
 
 </template>
@@ -146,6 +146,13 @@ const createGroupGui=ref(false);
 const invitationCount=ref(0);
 const invitationCenterDisp=ref(false);
 const userInvitations=ref([]);
+const blurrBackground=ref(false);
+const guiForm=ref('');
+
+function closeGui(){
+  guiForm.value=null;
+  blurrBackground.value=false;
+}
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
@@ -291,7 +298,8 @@ const verifyToken = async () => {
   }
 };
 const modifyGroup = async (groupId,groupName) => {
-  groupGui.value = true
+  guiForm.value='modifyGroup'
+  blurrBackground.value=true;
   userName.value = localStorage.getItem('userName')
   selectedGroupId.value =groupId;
   selectedGroupName.value=groupName;
@@ -301,7 +309,8 @@ const modifyGroup = async (groupId,groupName) => {
   console.log('the group name is',selectedGroupName.value);
 };
 const createGroup = async()=>{
-  createGroupGui.value=true;
+  guiForm.value='createGroup';
+  blurrBackground.value=true;
   userName.value=localStorage.getItem('userName');
 }
 const go_to_group= async (groupId,groupName)=>{
@@ -380,15 +389,30 @@ try{
     baseURL:useRuntimeConfig().public.apiBaseURL,
     method:'GET'
   })
-  userInvitations.value=response;
+const formattedInvitation = response.map(element=>{
+    return {
+        ...element,
+        invited:`${formatDateAgo(element.created_at)} ago`
+    }
+
+})
+
+  userInvitations.value=formattedInvitation;
   invitationCount.value=response.length;
 
   console.log('invitations',response.length);
+
+  
+
 } 
 catch(err){
  console.error('erorr trying to fetch invitations',err.response)
 } 
 
+}
+const modifyInvitation = async()=>{
+  guiForm.value='modifyInvitation';
+  blurrBackground.value=true;
 }
 const get_bubbles = async () => {
   console.log('getting all my bubbles')

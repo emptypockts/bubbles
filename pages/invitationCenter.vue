@@ -1,51 +1,68 @@
 <template>
-    <div class="block-form">
+  <div class="block-form">
     <button @click="$emit('close')">
-        ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
+      ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
     <h1>
-        invitations
+      invitations
     </h1>
-<div v-for="invitation in invitations" :key="invitation.id" class="user-item">
-
-{{ invitation }}
-
-</div>
-</div>
+  <div v-for="invitation in invitations" :key="invitation.id" class="invitation-card">
+    <div class="invitation-info">
+      <div><strong>Invited to:</strong> {{ invitation.name }}</div>
+      <div><strong>Invited by:</strong> {{ invitation.username }}</div>
+      <div><strong>You:</strong> {{ invitation.invited }}</div>
+    </div>
+    <div class="invitation-actions">
+      <button @click="respondInvite(invitation.name, true)" >
+        ٩(＾◡＾)۶ Accept
+      </button>
+      <button @click="respondInvite(invitation.name, false)" >
+        (︶︹︺) Decline
+      </button>
+    </div>
+  </div>
+  </div>
 </template>
 <script setup>
 
 import { ref } from 'vue';
-const props= defineProps({
-    invitations:Object
+const invitationStatus= ref(null);
+const groupId=ref(0);
+const props = defineProps({
+  invitations: Object
 })
 
+const respondInvite= async (group,isAccepted)=>{
+invitationStatus.value=isAccepted;
+groupId.value=group;
+  if (invitationStatus.value){
+    console.log('you have accepted this invitation',group)
+  }
+  else
+  console.log('you declined this invitation',group)
+  
+
+}
 </script>
-<style>
-.user-item{
-    color:white;
+<style scoped>
+.invitation-card {
+  background: transparent;
+  
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
-.search-field {
+.invitation-info {
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.invitation-actions {
   display: flex;
-  width: 280px;
-  transition: all 0.3s ease;
-  background: rgba(186, 80, 163, 0.356);
-  padding: 10px;
-  border-radius: 24px;
-  color: rgba(255, 255, 255, 0.71);
-  height: auto;
-  color: white;
-  margin-bottom: 20px;
-}
-.search-field::placeholder {
-  color: rgba(255, 255, 255, 0.822);
-}
-.search-field:focus {
-  border-color: rgba(224, 207, 223, 0.8);
-  /* Bubble's pink color */
-  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
-  /* Glow effect */
+  gap: 10px;
 }
 
 
