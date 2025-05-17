@@ -854,7 +854,7 @@ app.get('/api/v1/invitations', async (req, res) => {
             filename: dbPath,
             driver: sqlite3.Database
         })
-        const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at
+        const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at, invitations.invited_by,invitations.group_id,invitations.invitation_id
         FROM invitations
         JOIN groups ON  invitations.group_id=groups.group_id
         WHERE invitations.invited_user=?
@@ -891,12 +891,14 @@ app.get('/api/v1/invitations', async (req, res) => {
 //decline, accept or revoke invitations
 app.patch('/api/v1/invitations', async (req, res) => {
     const { userName, token, status, invitation_id, group_id } = req.body;
+    console.log(req.body);
     if (!userName || !token || !status || !invitation_id || !group_id) {
         console.error('missing fields')
         return res.status(400).json({
             error: 'missing fields'
         })
     }
+    
     const decodeToken = await verifyToken(token);
     if (decodeToken) {
         console.log('token is valid');

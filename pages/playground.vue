@@ -1,5 +1,5 @@
 <template>
-  <div v-if="play" class="app-container" :class="{blurred:blurrBackground}">
+  <div v-if="play" class="app-container" :class="{ blurred: blurrBackground }">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="bubble-container">
       <div v-if="(!selectedGroupName)">
@@ -39,18 +39,19 @@
       <div class="bubble-form">
         <div class="avatar-container">
           <div class="avatar-wrapper">
-          <img 
-          v-if="userAvatar" 
-          :src="userAvatar" 
-          alt="User Avatar" 
-          class="avatar" 
-          :title="userName" 
-          @click="modifyInvitation"
-          />
-          <span v-if="invitationCount>0" class="badge">
-            {{ invitationCount }}
-          </span>
-        </div>
+            <img 
+            v-if="userAvatar" 
+            :src="userAvatar" 
+            alt="User Avatar" 
+            class="avatar" 
+            :title="userName"
+            :class="{clickable:invitationCount>0}"
+            @click="handleClick" 
+              />
+            <span v-if="invitationCount > 0" class="badge">
+              {{ invitationCount }}
+            </span>
+          </div>
           <div class="menu-container">
             <button class="dots" @click="toggleMenu">
               &#x22EE;
@@ -79,33 +80,34 @@
       <div class="block-form">
         <h1>Groups (´｡• ᵕ •｡`) </h1>
         <button @click="createGroup()" class="modify-button">
-        create group
+          create group
         </button>
         <div v-for="groupName in myGroups" :key="groupName.group_id">
-          <button  @click="go_to_group(groupName.group_id,groupName.name)" class="groups">
+          <button @click="go_to_group(groupName.group_id, groupName.name)" class="groups">
             {{ groupName.name }}
           </button>
-          <button @click="modifyGroup(groupName.group_id,groupName.name)" class="modify-button">
+          <button @click="modifyGroup(groupName.group_id, groupName.name)" class="modify-button">
             ✎﹏
           </button>
         </div>
         <button @click="backToPlayground()" class="modify-button">
           playground
-        </button> 
+        </button>
 
       </div>
 
     </div>
   </div>
   <div class="floating-group-center">
-      <groupCenter v-if="guiForm==='modifyGroup'" :group_id="selectedGroupId" :userName="userName" :groupName="selectedGroupName" @close="closeGui"/>
-      </div>
-      <div class="floating-group-center">
-        <createGroupCenter v-if="guiForm==='createGroup'" :userName="userName" @close="closeGui"/>
-      </div>
-      <div class="floating-group-center">
-        <invitationCenter v-if="guiForm==='modifyInvitation'" :invitations="userInvitations" @close="closeGui"/>
-      </div>
+    <groupCenter v-if="guiForm === 'modifyGroup'" :group_id="selectedGroupId" :userName="userName"
+      :groupName="selectedGroupName" @close="closeGui" />
+  </div>
+  <div class="floating-group-center">
+    <createGroupCenter v-if="guiForm === 'createGroup'" :userName="userName" @close="closeGui" />
+  </div>
+  <div class="floating-group-center">
+    <invitationCenter v-if="guiForm === 'modifyInvitation'" :invitations="userInvitations" @close="closeGui" />
+  </div>
 
 </template>
 <script setup>
@@ -138,28 +140,33 @@ const avatars = ref({});
 const group_id = ref(null);
 const groupGui = ref(false);
 const groupsNames = ref([]);
-const myGroups= ref([]);
+const myGroups = ref([]);
 const showMenu = ref(false);
 const selectedGroupId = ref(null);
-const selectedGroupName=ref(null);
-const createGroupGui=ref(false);
-const invitationCount=ref(0);
-const invitationCenterDisp=ref(false);
-const userInvitations=ref([]);
-const blurrBackground=ref(false);
-const guiForm=ref('');
+const selectedGroupName = ref(null);
+const createGroupGui = ref(false);
+const invitationCount = ref(0);
+const invitationCenterDisp = ref(false);
+const userInvitations = ref([]);
+const blurrBackground = ref(false);
+const guiForm = ref('');
+const handleClick=()=>{
+  if (invitationCount.value>0){
+    modifyGroup();
+  }
+}
 
-function closeGui(){
-  guiForm.value=null;
-  blurrBackground.value=false;
+function closeGui() {
+  guiForm.value = null;
+  blurrBackground.value = false;
 }
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 };
-const backToPlayground = async ()=>{
+const backToPlayground = async () => {
   group_id.value = null;
-  selectedGroupId.value=null;
-  selectedGroupName.value=null;
+  selectedGroupId.value = null;
+  selectedGroupName.value = null;
   bubbles.value = [];
   allBubbles.value = [];
   lastLoadedAt.value = null;
@@ -187,10 +194,10 @@ const defineMessage = (event) => {
         handleNewBubble(event.data);
       }
       break;
-      case 'invitation':
-        console.log('invitation sent!')
-        getInvitations();
-        break;
+    case 'invitation':
+      console.log('invitation sent!')
+      getInvitations();
+      break;
     default:
       console.error('invalid websocket message', event);
       break;
@@ -216,7 +223,7 @@ const create_bubble = async () => {
           userName: userName.value,
           content: message.value,
           token: token,
-          group_id:group_id.value
+          group_id: group_id.value
         }
       })
       console.log('bubble created');
@@ -297,28 +304,28 @@ const verifyToken = async () => {
 
   }
 };
-const modifyGroup = async (groupId,groupName) => {
-  guiForm.value='modifyGroup'
-  blurrBackground.value=true;
+const modifyGroup = async (groupId, groupName) => {
+  guiForm.value = 'modifyGroup'
+  blurrBackground.value = true;
   userName.value = localStorage.getItem('userName')
-  selectedGroupId.value =groupId;
-  selectedGroupName.value=groupName;
-  group_id.value=groupId;
+  selectedGroupId.value = groupId;
+  selectedGroupName.value = groupName;
+  group_id.value = groupId;
   console.log('the the group id ', selectedGroupId.value);
   console.log('the username is ', userName.value);
-  console.log('the group name is',selectedGroupName.value);
+  console.log('the group name is', selectedGroupName.value);
 };
-const createGroup = async()=>{
-  guiForm.value='createGroup';
-  blurrBackground.value=true;
-  userName.value=localStorage.getItem('userName');
+const createGroup = async () => {
+  guiForm.value = 'createGroup';
+  blurrBackground.value = true;
+  userName.value = localStorage.getItem('userName');
 }
-const go_to_group= async (groupId,groupName)=>{
-  console.log('go to group',groupId);
-  console.log('group callced',groupName);
-  selectedGroupId.value =groupId;
-  selectedGroupName.value=groupName;
-  group_id.value=groupId;
+const go_to_group = async (groupId, groupName) => {
+  console.log('go to group', groupId);
+  console.log('group callced', groupName);
+  selectedGroupId.value = groupId;
+  selectedGroupName.value = groupName;
+  group_id.value = groupId;
   bubbles.value = [];
   allBubbles.value = [];
   lastLoadedAt.value = null;
@@ -326,28 +333,28 @@ const go_to_group= async (groupId,groupName)=>{
   await get_bubbles();
   await get_bubbles_all();
 }
-const get_my_groups = async()=>{
+const get_my_groups = async () => {
   console.log('getting my groups')
   const token = localStorage.getItem('token');
   const userName = localStorage.getItem('userName');
-  try{
+  try {
     const params = new URLSearchParams({
-      userName:userName,
-      token:token
+      userName: userName,
+      token: token
     })
-    const response = await $fetch(`/api/get_my_groups?${params.toString()}`,{
-      baseURL:useRuntimeConfig().public.apiBaseURL,
-      method:'GET'
+    const response = await $fetch(`/api/get_my_groups?${params.toString()}`, {
+      baseURL: useRuntimeConfig().public.apiBaseURL,
+      method: 'GET'
     });
-    console.log('my groups',response)
-    if (response&&response.length>0){
-      myGroups.value=response.map(myGroup=>({
+    console.log('my groups', response)
+    if (response && response.length > 0) {
+      myGroups.value = response.map(myGroup => ({
         ...myGroup
       }))
     }
   }
-  catch (err){
-    console.error('error trying to call api',err);
+  catch (err) {
+    console.error('error trying to call api', err);
 
   }
 };
@@ -377,42 +384,43 @@ const get_groups = async () => {
 
   }
 };
-const getInvitations = async ()=>{
+const getInvitations = async () => {
   console.log('pulling invitations');
-  const token =localStorage.getItem('token');
-try{
-  const params = new URLSearchParams({
-    userName:userName.value,
-    token:token
-  })
-  const response = await $fetch(`/api/v1/invitations?${params.toString()}`,{
-    baseURL:useRuntimeConfig().public.apiBaseURL,
-    method:'GET'
-  })
-const formattedInvitation = response.map(element=>{
-    return {
+  const token = localStorage.getItem('token');
+  try {
+    const params = new URLSearchParams({
+      userName: userName.value,
+      token: token
+    })
+    const response = await $fetch(`/api/v1/invitations?${params.toString()}`, {
+      baseURL: useRuntimeConfig().public.apiBaseURL,
+      method: 'GET'
+    })
+    console.log('response from invitation api', response)
+    const formattedInvitation = response.map(element => {
+      return {
         ...element,
-        invited:`${formatDateAgo(element.created_at)} ago`
-    }
+        invited: `${formatDateAgo(element.created_at)} ago`
+      }
 
-})
+    })
 
-  userInvitations.value=formattedInvitation;
-  invitationCount.value=response.length;
+    userInvitations.value = formattedInvitation;
+    invitationCount.value = response.filter(invite=>invite.status==='pending').length
+    
+    console.log('invitations', invitationCount.value);
 
-  console.log('invitations',response.length);
 
-  
 
-} 
-catch(err){
- console.error('erorr trying to fetch invitations',err.response)
-} 
+  }
+  catch (err) {
+    console.error('erorr trying to fetch invitations', err.response)
+  }
 
 }
-const modifyInvitation = async()=>{
-  guiForm.value='modifyInvitation';
-  blurrBackground.value=true;
+const modifyInvitation = async () => {
+  guiForm.value = 'modifyInvitation';
+  blurrBackground.value = true;
 }
 const get_bubbles = async () => {
   console.log('getting all my bubbles')
@@ -493,9 +501,9 @@ const get_avatar = async () => {
 const get_other_avatars = async (userName) => {
   if (!avatars.value[userName]) {
     try {
-      const response = await $fetch(`/api/other_avatar?userName=${userName}`,{
-        baseURL:useRuntimeConfig().public.apiBaseURL,
-        method:'GET'
+      const response = await $fetch(`/api/other_avatar?userName=${userName}`, {
+        baseURL: useRuntimeConfig().public.apiBaseURL,
+        method: 'GET'
       })
       avatars.value[userName] = response.avatar;
     } catch (err) {
@@ -557,34 +565,40 @@ const getBubbleStyle = (bubble) => {
 };
 </script>
 <style>
-.avatar-wrapper{
+.avatar.clickable{
+cursor:pointer;
+transition:transform 0.2s;
+}
+.avatar-wrapper {
   position: relative;
   display: inline-block;
 }
-.badge{
-  position:absolute;
-  bottom:0;
-  right:0;
+
+.badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
   background-color: red;
-  color:white;
+  color: white;
   font-size: 10px;
   border-radius: 50%;
   padding: 2px 6px;
   font-weight: bold;
-  cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
-.floating-group-center{
+
+.floating-group-center {
   position: fixed;
-  top:50%;
+  top: 50%;
   left: 50%;
-  transform:translate(-50%,-50%);
-  background: rgba(black ,0.6);
+  transform: translate(-50%, -50%);
+  background: rgba(black, 0.6);
   border-radius: 20px;
   padding: 2rem;
   z-index: 999;
-  box-shadow: 0 0 20px rgb(white,0.2);
+  box-shadow: 0 0 20px rgb(white, 0.2);
 }
+
 .groups {
   padding: 100px;
   padding: 12px 24px;
@@ -605,48 +619,55 @@ const getBubbleStyle = (bubble) => {
   transition: background 0.3s ease, box-shadow 0.3s ease;
 
 }
+
 .menu-dropdown {
   color: white;
   background-color: transparent;
   background: transparent;
   color: rgb(252, 220, 252)
 }
+
 .menu-dropdown:hover {
   background-color: transparent;
   background: transparent;
   transform: scale(1.1);
   transition: color, transform 1s ease-in-out;
 }
+
 .buttons {
   display: flex;
   flex-direction: column;
   width: auto;
   gap: 10px;
 }
+
 .app-container {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-    align-items: flex-start;
-    background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+  align-items: flex-start;
+  background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
   background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 20px;
   background-color: rgba(241, 163, 237, 0.071);
   min-height: 100vh;
-    height: auto;
-  transition:filter 0.3s ease;
+  height: auto;
+  transition: filter 0.3s ease;
 }
+
 .app-container.blurred {
   filter: blur(4px);
   pointer-events: none;
 }
+
 .left-content {
   /* Add styles for your left content here */
   width: 50%;
   /* Adjust as needed */
 }
+
 .forms-container {
   display: flex;
   flex-direction: column;
@@ -656,6 +677,7 @@ const getBubbleStyle = (bubble) => {
   gap: 20px;
   /* Space between riddle and bubble forms */
 }
+
 .block-form {
   display: flex;
   flex-direction: column;
@@ -673,6 +695,7 @@ const getBubbleStyle = (bubble) => {
   height: auto;
   gap: 10px;
 }
+
 .bubble-form {
   display: flex;
   flex-direction: column;
@@ -692,24 +715,28 @@ const getBubbleStyle = (bubble) => {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 
 }
+
 .bubble-delete-logo {
   size: 10px;
   background: transparent;
   border: transparent;
   color: white;
 }
+
 .bubble-delete-logo:hover {
   color: #1c0101ce;
   opacity: .5;
   cursor: pointer;
 
 }
+
 @media (max-width: 768px) {
   .bubble-form {
     max-width: 250px;
     padding: 8px;
   }
 }
+
 @media (max-width: 480px) {
   .bubble-form {
     max-width: 200px;
@@ -728,19 +755,21 @@ const getBubbleStyle = (bubble) => {
   }
 
 }
+
 .avatar-container {
   display: flex;
   align-items: center;
   position: relative
 }
+
 .avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  cursor: pointer;
   transition: transform 0.2s ease-in-out;
 
 }
+
 .mini-avatar {
   width: 40px;
   height: 40px;
@@ -748,10 +777,12 @@ const getBubbleStyle = (bubble) => {
   cursor: pointer;
   transition: transform 0.2 ease-in-out;
 }
+
 .avatar:hover {
   transform: scale(1.1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
+
 .my-bubble {
   position: relative;
   width: 280px;
@@ -778,6 +809,7 @@ const getBubbleStyle = (bubble) => {
   overflow: hidden;
   z-index: 1;
 }
+
 .my-bubble::before,
 .bubble::before {
   content: '';
@@ -793,15 +825,19 @@ const getBubbleStyle = (bubble) => {
   transform: rotate(45deg);
   opacity: .1;
 }
+
 @keyframes drift {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   50% {
     transform: translateX(100px);
   }
 }
+
 .bubble-username,
 .bubble-date {
   margin: 0;
@@ -811,6 +847,7 @@ const getBubbleStyle = (bubble) => {
   font-size: 16px;
 
 }
+
 .bubble-content {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   font-size: 12px;
@@ -821,6 +858,7 @@ const getBubbleStyle = (bubble) => {
   max-width: 90%;
   color: white;
 }
+
 .bubble {
   position: relative;
   width: 250px;
@@ -855,6 +893,7 @@ const getBubbleStyle = (bubble) => {
   overflow: hidden;
   /* Ensure content stays within the bubble */
 }
+
 .bubble::before {
   content: '';
   position: absolute;
@@ -869,6 +908,7 @@ const getBubbleStyle = (bubble) => {
   transform: rotate(45deg);
   opacity: 0.4;
 }
+
 .input-field {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -885,15 +925,18 @@ const getBubbleStyle = (bubble) => {
   color: white;
   margin-bottom: 20px;
 }
+
 .input-field::placeholder {
   color: rgba(255, 255, 255, 0.822);
 }
+
 .input-field:focus {
   border-color: rgba(224, 207, 223, 0.8);
   /* Bubble's pink color */
   box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
   /* Glow effect */
 }
+
 .submit-button {
   position: flex;
   flex-direction: row;
@@ -917,11 +960,13 @@ const getBubbleStyle = (bubble) => {
   /* Smooth transitions */
   z-index: 3;
 }
+
 .submit-button:disabled {
   opacity: 0.6;
   /* Reduce opacity when disabled */
   cursor: not-allowed;
 }
+
 .submit-button:hover:not(:disabled) {
   background: radial-gradient(circle at 30% 30%,
       rgba(255, 255, 255, 0.317),
@@ -932,13 +977,16 @@ const getBubbleStyle = (bubble) => {
   box-shadow: 0 0 10px rgba(238, 182, 235, 0.4);
   /* Glow effect */
 }
+
 .menu-container {
   margin-left: 10px;
 }
+
 .dots {
   background-color: transparent;
   background: transparent;
 }
+
 .dots:hover {
   background: transparent;
   background-color: transparent;
@@ -946,12 +994,14 @@ const getBubbleStyle = (bubble) => {
   color: blue;
   transition: transform, color 1s ease-in-out;
 }
+
 .bubble-container {
   display: flex;
   flex-direction: row;
   max-width: 100%;
 }
-.modify-button{
+
+.modify-button {
   font-size: 14px;
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease;

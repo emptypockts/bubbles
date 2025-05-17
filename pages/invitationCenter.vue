@@ -29,17 +29,38 @@ import { ref } from 'vue';
 const invitationStatus= ref(null);
 const groupId=ref(0);
 const props = defineProps({
-  invitations: Object
+  invitations: Array
 })
 
 const respondInvite= async (group,isAccepted)=>{
 invitationStatus.value=isAccepted;
 groupId.value=group;
+const invitation=props.invitations.find(invite=>invite.name===group)
   if (invitationStatus.value){
-    console.log('you have accepted this invitation',group)
+    const token = localStorage.getItem('token');
+    const userName=localStorage.getItem('userName');
+    try{
+    const response = await $fetch('/api/v1/invitations',{
+
+      baseURL:useRuntimeConfig().public.apiBaseURL,
+      method:'PATCH',
+      body:{
+        token:token,
+        userName:userName,
+        invitation_id:invitation.invitation_id,
+        group_id:invitation.group_id,
+        status:'accepted'
+      }
+    })
+    console.log('invitation changed successfully')
   }
+  catch (err){
+    console.error('error calling api',err.response)
+  }
+  }
+  
   else
-  console.log('you declined this invitation',group)
+  console.log('you declined this invitation',group);
   
 
 }
