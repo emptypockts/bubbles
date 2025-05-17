@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules:['@nuxt/ui'],
   app:{
     head:{
       link:[
@@ -38,15 +37,15 @@ plugins:[{
         interval:1000,
       },
       allowedHosts:['bubbles.dahoncho.com'],
-      hmr:{
-        // prod
-        protocol: "https",
-        host: 'bubbles.dahoncho.com',
+      // hmr:{
+      //   // prod
+      //   protocol: "https",
+      //   host: 'bubbles.dahoncho.com',
         
-        // dev
-        // clientPort: 3000,
-        // port: 3000,
-      },
+      //   // dev
+      //   // clientPort: 3000,
+      //   // port: 3000,
+      // },
       proxy:{
         '/ws': { 
           target: 'ws://localhost:3003', 
