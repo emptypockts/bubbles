@@ -3,10 +3,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="bubble-container">
       <div v-if="(!selectedGroupName)">
-        <h1 style="font-size: 14px">⋆✴︎˚｡⋆playground⋆✴︎˚｡⋆</h1>
+        <h1 style="font-size: 14px; color:white">you are in: ⋆✴︎˚｡⋆playground⋆✴︎˚｡⋆</h1>
       </div>
       <div v-else>
-        <h1 style="font-size: 14px">⋆✴︎˚｡⋆{{ selectedGroupName }}⋆✴︎˚｡⋆</h1>
+        <h1 style="font-size: 14px; color:white">you are in: ⋆✴︎˚｡⋆{{ selectedGroupName }}⋆✴︎˚｡⋆</h1>
       </div>
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
@@ -35,8 +35,8 @@
       </div>
 
     </div>
-    <div class="forms-container">
-      <div class="bubble-form">
+    <div class="right panel">
+      <div class="block-form">
         <div class="avatar-container">
           <div class="avatar-wrapper">
             <img 
@@ -58,17 +58,21 @@
             </button>
           </div>
           <div v-if="showMenu">
-            <button @click="logout" class="menu-dropdown">logout</button>
+            <button @click="logout">logout</button>
           </div>
         </div>
         <form @submit.prevent="create_bubble">
-          <textarea v-model="message" label="message" placeholder="what are you up to?" class="input-field" />
-          <div class="buttons">
-            <button type="submit" :disabled="isLoading || message.length > 80" class="submit-button">
+          <textarea 
+          v-model="message" 
+          label="message" 
+          placeholder="what are you up to?" 
+          class="input-field" />
+          <div >
+            <button :disabled="isLoading || message.length > 80" >
               post
               {{ 80 - message.length }} characters left
             </button>
-            <button @click="loadMore" class="submit-button" :disabled="isLoading">
+            <button @click="loadMore"  :disabled="isLoading">
               load more
             </button>
           </div>
@@ -83,14 +87,15 @@
           create group
         </button>
         <div v-for="groupName in myGroups" :key="groupName.group_id">
-          <button @click="go_to_group(groupName.group_id, groupName.name)" class="groups">
+          <button @click="go_to_group(groupName.group_id, groupName.name)">
+            <strong>go to:</strong> 
             {{ groupName.name }}
           </button>
-          <button @click="modifyGroup(groupName.group_id, groupName.name)" class="modify-button">
-            ✎﹏
+          <button @click="modifyGroup(groupName.group_id, groupName.name)" class="button-more">
+          invite 
           </button>
         </div>
-        <button @click="backToPlayground()" class="modify-button">
+        <button @click="backToPlayground()">
           playground
         </button>
 
@@ -152,11 +157,22 @@ const blurrBackground = ref(false);
 const guiForm = ref('');
 const handleClick=()=>{
   if (invitationCount.value>0){
-    modifyGroup();
+    modifyInvitation();
   }
 }
 
 function closeGui() {
+  console.log('switch of close gui',guiForm.value)
+  switch (guiForm.value){
+    case 'modifyGroup':
+      case 'createGroup':
+      get_my_groups();
+      break
+    case 'modifyInvitation':
+      console.log('case of invites')
+      getInvitations();
+      break
+  }
   guiForm.value = null;
   blurrBackground.value = false;
 }
@@ -187,6 +203,7 @@ const connectWebSocket = () => {
 
 };
 const defineMessage = (event) => {
+  console.log('claling message from playground ', event);
   switch (event.type) {
     case 'bubble':
       if (selectedGroupId.value == event.data.group_id) {
@@ -311,9 +328,6 @@ const modifyGroup = async (groupId, groupName) => {
   selectedGroupId.value = groupId;
   selectedGroupName.value = groupName;
   group_id.value = groupId;
-  console.log('the the group id ', selectedGroupId.value);
-  console.log('the username is ', userName.value);
-  console.log('the group name is', selectedGroupName.value);
 };
 const createGroup = async () => {
   guiForm.value = 'createGroup';
@@ -396,7 +410,7 @@ const getInvitations = async () => {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'GET'
     })
-    console.log('response from invitation api', response)
+    if (response.length>0){
     const formattedInvitation = response.map(element => {
       return {
         ...element,
@@ -409,12 +423,16 @@ const getInvitations = async () => {
     invitationCount.value = response.filter(invite=>invite.status==='pending').length
     
     console.log('invitations', invitationCount.value);
-
+  }
+  else{
+    invitationCount.value=0;
+    console.log('no pending invitations');
+  }
 
 
   }
   catch (err) {
-    console.error('erorr trying to fetch invitations', err.response)
+    console.error('erorr trying to fetch invitations', err)
   }
 
 }
@@ -565,6 +583,7 @@ const getBubbleStyle = (bubble) => {
 };
 </script>
 <style>
+
 .avatar.clickable{
 cursor:pointer;
 transition:transform 0.2s;
@@ -573,7 +592,6 @@ transition:transform 0.2s;
   position: relative;
   display: inline-block;
 }
-
 .badge {
   position: absolute;
   bottom: 0;
@@ -587,38 +605,6 @@ transition:transform 0.2s;
   transition: transform 0.2s ease-in-out;
 }
 
-.floating-group-center {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(black, 0.6);
-  border-radius: 20px;
-  padding: 2rem;
-  z-index: 999;
-  box-shadow: 0 0 20px rgb(white, 0.2);
-}
-
-.groups {
-  padding: 100px;
-  padding: 12px 24px;
-  /* Larger padding */
-  font-size: 16px;
-  /* Larger font size */
-  background: radial-gradient(circle at 10% 10%,
-      rgba(255, 255, 255, 0.742),
-      rgba(250, 101, 242, 0.4) 40%,
-      rgba(250, 101, 242, 0.2) 70%,
-      rgba(250, 101, 242, 0.1) 100%);
-  color: #f9f7f8e8;
-
-  border: 1px;
-  border-radius: 20px;
-
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-
-}
 
 .menu-dropdown {
   color: white;
@@ -626,21 +612,12 @@ transition:transform 0.2s;
   background: transparent;
   color: rgb(252, 220, 252)
 }
-
 .menu-dropdown:hover {
   background-color: transparent;
   background: transparent;
   transform: scale(1.1);
   transition: color, transform 1s ease-in-out;
 }
-
-.buttons {
-  display: flex;
-  flex-direction: column;
-  width: auto;
-  gap: 10px;
-}
-
 .app-container {
   display: flex;
   flex-direction: row;
@@ -656,65 +633,11 @@ transition:transform 0.2s;
   height: auto;
   transition: filter 0.3s ease;
 }
-
 .app-container.blurred {
   filter: blur(4px);
   pointer-events: none;
 }
 
-.left-content {
-  /* Add styles for your left content here */
-  width: 50%;
-  /* Adjust as needed */
-}
-
-.forms-container {
-  display: flex;
-  flex-direction: column;
-  /* Stack riddle and bubble forms vertically */
-  align-items: flex-end;
-  /* Align forms to the right */
-  gap: 20px;
-  /* Space between riddle and bubble forms */
-}
-
-.block-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 300px;
-  background: rgba(233, 163, 248, 0.324);
-  /* Semi-transparent white background */
-  backdrop-filter: blur(10px);
-  /* Frosted glass effect */
-
-  padding: 10px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  color: white;
-  height: auto;
-  gap: 10px;
-}
-
-.bubble-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  max-width: 300px;
-  width: 100%;
-  background: rgba(233, 163, 248, 0.324);
-  /* Semi-transparent white background */
-  backdrop-filter: blur(10px);
-  /* Frosted glass effect */
-  padding: 10px;
-  gap: 20px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-  height: auto;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-
-}
 
 .bubble-delete-logo {
   size: 10px;
@@ -722,21 +645,18 @@ transition:transform 0.2s;
   border: transparent;
   color: white;
 }
-
 .bubble-delete-logo:hover {
   color: #1c0101ce;
   opacity: .5;
   cursor: pointer;
 
 }
-
 @media (max-width: 768px) {
   .bubble-form {
     max-width: 250px;
     padding: 8px;
   }
 }
-
 @media (max-width: 480px) {
   .bubble-form {
     max-width: 200px;
@@ -746,30 +666,20 @@ transition:transform 0.2s;
     right: 10px;
     padding: 5px;
   }
-
-  .submit-button {
-    padding: 8px 16px;
-    /* Smaller button padding */
-    font-size: 14px;
-    /* Smaller font size */
-  }
-
 }
-
 .avatar-container {
   display: flex;
   align-items: center;
   position: relative
 }
-
 .avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   transition: transform 0.2s ease-in-out;
-
+  opacity: 1;
+  z-index: 2;
 }
-
 .mini-avatar {
   width: 40px;
   height: 40px;
@@ -777,12 +687,10 @@ transition:transform 0.2s;
   cursor: pointer;
   transition: transform 0.2 ease-in-out;
 }
-
 .avatar:hover {
   transform: scale(1.1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
-
 .my-bubble {
   position: relative;
   width: 280px;
@@ -809,7 +717,6 @@ transition:transform 0.2s;
   overflow: hidden;
   z-index: 1;
 }
-
 .my-bubble::before,
 .bubble::before {
   content: '';
@@ -825,9 +732,7 @@ transition:transform 0.2s;
   transform: rotate(45deg);
   opacity: .1;
 }
-
 @keyframes drift {
-
   0%,
   100% {
     transform: translateX(0);
@@ -837,7 +742,6 @@ transition:transform 0.2s;
     transform: translateX(100px);
   }
 }
-
 .bubble-username,
 .bubble-date {
   margin: 0;
@@ -847,7 +751,6 @@ transition:transform 0.2s;
   font-size: 16px;
 
 }
-
 .bubble-content {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   font-size: 12px;
@@ -858,7 +761,6 @@ transition:transform 0.2s;
   max-width: 90%;
   color: white;
 }
-
 .bubble {
   position: relative;
   width: 250px;
@@ -893,7 +795,6 @@ transition:transform 0.2s;
   overflow: hidden;
   /* Ensure content stays within the bubble */
 }
-
 .bubble::before {
   content: '';
   position: absolute;
@@ -909,101 +810,46 @@ transition:transform 0.2s;
   opacity: 0.4;
 }
 
-.input-field {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  width: 280px;
-  transition: all 0.3s ease;
-  background: rgba(186, 80, 163, 0.356);
-  /* Semi-transparent background */
-  padding: 10px;
-  border-radius: 24px;
-  /* Rounded corners to match bubbles */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  color: rgba(255, 255, 255, 0.71);
-  height: 100px;
-  color: white;
-  margin-bottom: 20px;
-}
-
-.input-field::placeholder {
-  color: rgba(255, 255, 255, 0.822);
-}
-
-.input-field:focus {
-  border-color: rgba(224, 207, 223, 0.8);
-  /* Bubble's pink color */
-  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
-  /* Glow effect */
-}
-
-.submit-button {
-  position: flex;
-  flex-direction: row;
-  padding: 12px 24px;
-  /* Larger padding */
-  font-size: 16px;
-  /* Larger font size */
-  background: radial-gradient(circle at 10% 10%,
-      rgba(255, 255, 255, 0.742),
-      rgba(250, 101, 242, 0.4) 40%,
-      rgba(250, 101, 242, 0.2) 70%,
-      rgba(250, 101, 242, 0.1) 100%);
-  /* Bubble gradient */
-  color: #f9f7f8e8;
-  /* Bubble text color */
-  border: 1px;
-  border-radius: 20px;
-  /* Rounded corners */
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-  /* Smooth transitions */
-  z-index: 3;
-}
-
-.submit-button:disabled {
-  opacity: 0.6;
-  /* Reduce opacity when disabled */
-  cursor: not-allowed;
-}
-
-.submit-button:hover:not(:disabled) {
-  background: radial-gradient(circle at 30% 30%,
-      rgba(255, 255, 255, 0.317),
-      rgba(250, 101, 242, 0.5) 40%,
-      rgba(250, 101, 242, 0.3) 70%,
-      rgba(250, 101, 242, 0.2) 100%);
-  /* Brighter gradient on hover */
-  box-shadow: 0 0 10px rgba(238, 182, 235, 0.4);
-  /* Glow effect */
-}
-
 .menu-container {
   margin-left: 10px;
 }
-
 .dots {
   background-color: transparent;
-  background: transparent;
+  border: transparent;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
-
 .dots:hover {
   background: transparent;
   background-color: transparent;
   transform: scale(1.8);
-  color: blue;
-  transition: transform, color 1s ease-in-out;
+  color: white;
+  
 }
-
 .bubble-container {
-  display: flex;
-  flex-direction: row;
   max-width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  overflow-x: hidden;
+  width: 90%;
+
+}
+.bubble-container::-webkit-scrollbar {
+  width: 12px;
 }
 
-.modify-button {
-  font-size: 14px;
+.bubble-container::-webkit-scrollbar-track {
+  background: rgba(186, 80, 163, 0.2);
+}
+
+.bubble-container::-webkit-scrollbar-thumb {
+  background: rgba(186, 80, 163, 0.6);
+}
+
+.bubble-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(186, 80, 163, 0.8);
   cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.right-panel{
+  position:-webkit-sticky;
 }
 </style>

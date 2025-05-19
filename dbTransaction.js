@@ -872,11 +872,11 @@ app.get('/api/v1/invitations', async (req, res) => {
         const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at, invitations.invited_by,invitations.group_id,invitations.invitation_id
         FROM invitations
         JOIN groups ON  invitations.group_id=groups.group_id
-        WHERE invitations.invited_user=?
+        WHERE invitations.invited_user=? AND invitations.status=?
         ORDER by invitations.created_at DESC
         `;
         try {
-            const invitations = await db.all(query, [userName])
+            const invitations = await db.all(query, [userName,'pending'])
             if (invitations.length > 0) {
                 return res.status(200).json(
                     invitations
@@ -885,7 +885,7 @@ app.get('/api/v1/invitations', async (req, res) => {
             else {
                 console.log('you have no pending invitations')
                 return res.status(200).json({
-                    message: 'no invitations pending'
+                    invitations
                 })
             }
         }
@@ -1082,6 +1082,7 @@ app.post('/api/ai_riddle', async (req, res) => {
             error: 'missing query'
         });
     }
+    try{
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
     const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
@@ -1100,6 +1101,13 @@ app.post('/api/ai_riddle', async (req, res) => {
     return res.status(200).json({
         riddle: riddle
     })
+}
+catch (error){
+console.error('bad request');
+return res.status(400).json({
+    error:'bad request'
+})
+}
 })
 //run the backend on port 3000
 app.listen(3000, () => {

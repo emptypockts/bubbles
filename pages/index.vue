@@ -6,28 +6,25 @@
           bubbles<br>
           ( ˘ ³˘)ノ°ﾟº❍｡</h1>
         <form @submit.prevent="handleLogin" class="login-form">
-          <div class="input-container">
-            <label for="username" class="input-label">Username</label>
-            <input
-              v-model="userName"
-              id="username"
+          <div>
+            <textarea 
+            v-model="userName"
               placeholder="@username"
               required
-              class="input-field"
-            />
+              class="input-field"/>
           </div>
-          <div class="input-container">
-            <label for="password" class="input-label">Password</label>
+          <div>
             <input
               type="password"
               v-model="password"
               id="password"
               required
               class="input-field"
+              placeholder="@password"
             />
           </div>
-          <div class="input-container">
-            <button type="submit" :disabled="isLoading" class="submit-button">
+          <div>
+            <button :disabled="isLoading" >
               {{ isLoading ? 'Logging in...' : 'Login' }}
             </button>
             <div class="error-message" v-if="errorMessage">
@@ -120,87 +117,10 @@ const handleLogin= async()=>{
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-/* Input container */
-.input-container {
   align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
-/* Input label */
-.input-label {
-  font-size: 2rem;
-  color: #ffffff;
-  text-align: left;
-  font-weight: 400;
-  font-size: 16px;
-  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-}
 
-/* Input field */
-.input-field {
-  align-items: center;
-  padding: 12px 16px;
-  font-size: 1rem;
-  border: 0px solid rgba(255, 255, 255, 0.5); /* Semi-transparent border */
-  border-radius: 12px; /* Rounded corners */
-  outline: none;
-  background: rgba(233, 226, 226, 0.39); /* Semi-transparent background */
-  color: #333;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  height: auto;
-}
-
-.input-field:focus {
-  border-color: rgba(250, 101, 242, 0.8); /* Bubble's pink color */
-  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4); /* Glow effect */
-}
-
-/* Submit button */
-.submit-button {
-  align-items: center;
-  padding: 12px 24px;
-  font-size: 1rem;
-  background: radial-gradient(
-    circle at 10% 10%,
-    rgba(255, 255, 255, 0.8),
-    rgba(250, 101, 242, 0.4) 40%,
-    rgba(250, 101, 242, 0.2) 70%,
-    rgba(250, 101, 242, 0.1) 100%
-  ); /* Bubble gradient */
-  color: #fdebf6c9; /* Bubble text color */
-  border: 1px solid rgba(229, 174, 253, 0.5); /* Semi-transparent border */
-  border-radius: 24px; /* Rounded corners */
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-  width: auto;
-}
-
-.submit-button:disabled {
-  opacity: 0.6; /* Reduce opacity when disabled */
-  cursor: not-allowed;
-}
-
-.submit-button:hover:not(:disabled) {
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(250, 249, 250, 0.9),
-    rgba(250, 101, 242, 0.5) 40%,
-    rgba(250, 101, 242, 0.3) 70%,
-    rgba(250, 101, 242, 0.2) 100%
-  ); /* Brighter gradient on hover */
-  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4); /* Glow effect */
-}
-
-/* Error message */
-.error-message {
-  color: #faf9f9; /* Red color for errors */
-  font-size: 0.9rem;
-  margin-top: 10px;
-}
 .login-title{
     color: rgb(249, 218, 251);
 }

@@ -3,25 +3,16 @@
     <button @click="$emit('close')">
         ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
-    <h1>
-        users in group
-    </h1>
-<div v-for="user in groupUsers" :key="user.username" class="user-item">
-
+<div v-for="user in groupUsers" :key="user.username">
 {{ user.username }}
-
-<button @click="removeUserFromGroup(user.username)">x</button>
+<button @click="removeUserFromGroup(user.username)">remove</button>
 </div>
-
-<h1>
-    invite to the group
-</h1>
 <input v-model="lookForUser"
 @input="searchUsers"
 placeholder="search for users to invite..."
 class="search-field"
 />
-<div style="font-size: 14px">
+<div class="error-message">
     {{ errorMessage }}
             </div>
 <div v-if="loading_search">
@@ -147,31 +138,5 @@ await fetchGroupUsers();
 
 </script>
 <style>
-.user-item{
-    color:white;
-}
-
-.search-field {
-  display: flex;
-  width: 280px;
-  transition: all 0.3s ease;
-  background: rgba(186, 80, 163, 0.356);
-  padding: 10px;
-  border-radius: 24px;
-  color: rgba(255, 255, 255, 0.71);
-  height: auto;
-  color: white;
-  margin-bottom: 20px;
-}
-.search-field::placeholder {
-  color: rgba(255, 255, 255, 0.822);
-}
-.search-field:focus {
-  border-color: rgba(224, 207, 223, 0.8);
-  /* Bubble's pink color */
-  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
-  /* Glow effect */
-}
-
 
 </style>

@@ -15,7 +15,7 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (message) => {
     const object = JSON.parse(message.toString());
-
+    console.log('called websocket server with message',object)
     switch (object.type) {
         case 'bubble':
             console.log('object type is a bubble');
@@ -42,7 +42,7 @@ wss.on('connection', (ws) => {
             try {
                 wss.clients.forEach((client) => {
                     if (client.readyState === WebSocket.OPEN) {
-                        client.send(JSON.stringify(object.data));
+                        client.send(JSON.stringify(object));
                     }
                 });
             } catch (err) {
