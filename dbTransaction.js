@@ -855,7 +855,7 @@ app.post('/api/v1/invitations', async (req, res) => {
 })
 // get invitation
 app.get('/api/v1/invitations', async (req, res) => {
-    const { userName, token } = req.query;
+    const { userName, token,group_id } = req.query;
     if (!userName || !token) {
         console.error('missing fields');
         return res.status(400).json({
@@ -869,6 +869,7 @@ app.get('/api/v1/invitations', async (req, res) => {
             filename: dbPath,
             driver: sqlite3.Database
         })
+        if (!group_id){
         const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at, invitations.invited_by,invitations.group_id,invitations.invitation_id
         FROM invitations
         JOIN groups ON  invitations.group_id=groups.group_id
@@ -895,6 +896,23 @@ app.get('/api/v1/invitations', async (req, res) => {
                 error: err
             })
         }
+    }
+    else{
+        const queryAllPending = `SELECT * FROM invitations where group_id=? AND status=?
+        `;
+        const pendingList = await db.all(queryAllPending,[group_id,'pending']);
+        if (pendingList.length>0){
+            return res.status(200).json(
+                pendingList
+            )
+        }
+        else{
+            console.error('no pending invitations for this group');
+            return res.status(200).json({
+                message:'no pending invitations'
+            })
+        }
+    }
     }
     else {
         console.error('invalid token');

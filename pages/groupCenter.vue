@@ -3,6 +3,9 @@
     <button @click="$emit('close')">
         ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
+ <div v-for="pendingUser in pendingList" :key="pendingUser.invited_user">
+    <strong>{{ pendingUser.invited_user }}</strong> invite already sent
+ </div>   
 <div v-for="user in groupUsers" :key="user.username">
 {{ user.username }}
 <button @click="removeUserFromGroup(user.username)">remove</button>
@@ -38,6 +41,7 @@ const props= defineProps({
 })
 const groupUsers=ref([]);
 const usersNotInGroup= ref([]);
+const pendingList=ref([]);
 const lookForUser=ref('');
 const token = localStorage.getItem('token')
 const fetchGroupUsers= async()=>{
@@ -56,12 +60,42 @@ try{
     groupUsers.value=response;
 }
 catch(err){
-    console.log('error calling api',err)
+    console.log('error calling api',err);
+    showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+
 }finally{
     loading_users.value=false;
 }
 
 };
+const fetchUsersPending= async()=>{
+    const params = new URLSearchParams({
+        userName:props.userName,
+        token:token,
+        group_id:props.group_id
+    });
+    loading_search.value=true;
+    try{
+        const response = await $fetch(`/api/v1/invitations?${params.toString()}`,{
+            baseURL:useRuntimeConfig().public.apiBaseURL,
+            method:'GET'
+        })
+        if (response.length>0){
+            console.log('invitations pending',response)
+            pendingList.value=response;
+        }
+        else{
+            console.log('no pending invitations');
+        }
+    }   
+    catch(err){
+        console.error(err);
+        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+    }
+    finally{
+        loading_search.value=false;
+    }
+}
 const fetchUsersNotInGroup = async ()=>{
     const params = new URLSearchParams({
         userName:props.userName,
@@ -79,6 +113,7 @@ const fetchUsersNotInGroup = async ()=>{
     }
     catch (err){
         console.log('error calling api',err);
+        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
     }
     finally{
         loading_search.value=false;
@@ -103,7 +138,9 @@ const removeUserFromGroup = async(usernameToRemove)=>{
     await fetchGroupUsers();
 }
 catch (err){
-    console.error('error trying to call the api: ',err)
+    console.error('error trying to call the api: ',err);
+    showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+
 }
 }
 const inviteUser = async(selectedUser)=>{
@@ -134,6 +171,7 @@ const inviteUser = async(selectedUser)=>{
 }
 onMounted (async ()=>{
 await fetchGroupUsers();
+await fetchUsersPending();
 })
 
 </script>
