@@ -15,11 +15,18 @@ export default defineNuxtConfig({
     }
   },
 nitro:{
+  routeRules:{
+    '/_nuxt/**':{
+      headers:{
+        'Cache-Control': 'public, max-age=0, must-revalidate',
+      }
+    }
+  },
   devProxy:{
     '/api':{
       target:'http://localhost:3000',
       changeOrigin:true,
-      secure:false
+      secure:false,
     },
     '/ws':{
       target: 'ws://localhost:3003',
