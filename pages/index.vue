@@ -11,7 +11,7 @@
             v-model="userName"
               placeholder="@username"
               required
-              class="input-field"/>
+              class="singleU-field"/>
           </div>
           <div>
             <input
@@ -19,7 +19,7 @@
               v-model="password"
               id="password"
               required
-              class="input-field"
+              class="singleU-field"
               placeholder="@password"
             />
           </div>

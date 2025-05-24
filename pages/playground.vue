@@ -35,8 +35,13 @@
       </div>
 
     </div>
+    
     <div class="right panel">
+
       <div class="block-form">
+<div class="avatar-title">
+      <h1>🫧bubbles🫧</h1>
+           
         <div class="avatar-container">
           <div class="avatar-wrapper">
             <img 
@@ -52,7 +57,8 @@
               {{ invitationCount }}
             </span>
           </div>
-          <div class="menu-container">
+          
+          <div class="menu-container">  
             <button class="dots" @click="toggleMenu">
               &#x22EE;
             </button>
@@ -61,19 +67,19 @@
             <button @click="logout">logout</button>
           </div>
         </div>
+        </div>       
         <form @submit.prevent="create_bubble">
           <textarea 
           v-model="message" 
           label="message" 
-          placeholder="what are you up to?" 
+          placeholder="post your bubble" 
           class="input-field" />
-          <div >
+          <div class="button-form">
             <button :disabled="isLoading || message.length > 80" >
-              post
-              {{ 80 - message.length }} characters left
+              💭post {{ 80 - message.length }} characters left💭
             </button>
             <button @click="loadMore"  :disabled="isLoading">
-              load more
+               ｡⋆*°○❀load more❀○°*⋆｡
             </button>
           </div>
         </form>

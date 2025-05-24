@@ -254,7 +254,7 @@ app.get('/api/get_bubbles', async (req, res) => {
     }
     else {
         console.error('error token')
-        return res.status(400).json({
+        return res.status(401).json({
             error: 'invalid token'
         })
     }
@@ -311,7 +311,7 @@ app.get('/api/get_bubbles_all', async (req, res) => {
     }
     else {
         console.error('invalid token')
-        return res.status(400).json({
+        return res.status(401).json({
             error: 'invalid token'
         })
     }
@@ -372,7 +372,7 @@ app.post('/api/create_group_id', async (req, res) => {
         }
     } else {
         console.error('error in the token validation')
-        return res.status(400).json({
+        return res.status(401).json({
             error: 'error in the token validation'
         })
     }

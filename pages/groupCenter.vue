@@ -1,5 +1,5 @@
 <template>
-    <div class="block-form">
+    <div class="invite-form">
     <button @click="$emit('close')">
         ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
@@ -12,24 +12,24 @@
 </div>
 <input v-model="lookForUser"
 @input="searchUsers"
-placeholder="search for users to invite..."
-class="search-field"
+placeholder="search...."
+class="singleU-field"
 />
-<div class="error-message">
-    {{ errorMessage }}
-            </div>
+<p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 <div v-if="loading_search">
 searching ...
 </div>
-<div v-for="userNotInGroup in usersNotInGroup" :key="userNotInGroup.username" class="user-item">
+<div v-for="userNotInGroup in usersNotInGroup" :key="userNotInGroup.username">
 {{ userNotInGroup.username}}
-<button @click="inviteUser(userNotInGroup.username)">+</button>
+<button @click="inviteUser(userNotInGroup.username)">add</button>
 </div>
 </div>
 </template>
 <script setup>
 
 import { ref,onMounted } from 'vue';
+import { userGroupStore} from '@/stores/group'
+const groupStore=userGroupStore();
 const { $websocket } = useNuxtApp();
 const loading_users=ref (false);
 const loading_search = ref(false);
@@ -47,25 +47,27 @@ const token = localStorage.getItem('token')
 const fetchGroupUsers= async()=>{
     console.log('getting users')
  loading_users.value=true;
-try{
-    const params = new URLSearchParams({
-        userName:props.userName,
-        token:token,
-        group_id:props.group_id
-    })
-    const response = await $fetch(`/api/get_users_from_group?${params.toString()}`,{
-        baseURL:useRuntimeConfig().public.apiBaseURL,
-        method:'GET'
-    });
-    groupUsers.value=response;
-}
-catch(err){
-    console.log('error calling api',err);
-    showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+//try{
+//     const params = new URLSearchParams({
+//         userName:props.userName,
+//         token:token,
+//         group_id:props.group_id
+//     })
+//     const response = await $fetch(`/api/get_users_from_group?${params.toString()}`,{
+//         baseURL:useRuntimeConfig().public.apiBaseURL,
+//         method:'GET'
+//     });
+//     groupUsers.value=response;
+// }
+// catch(err){
+//     console.log('error calling api',err);
+//     showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
 
-}finally{
-    loading_users.value=false;
-}
+// }finally{
+//     loading_users.value=false;
+// }
+
+groupUsers.value = await groupStore.getUsers(props.group_id,props.userName)
 
 };
 const fetchUsersPending= async()=>{

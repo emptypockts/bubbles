@@ -36,13 +36,13 @@ textarea:focus{
 .input-field {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
-  width: 280px;
+  width: 350px;
   transition: all 0.3s ease;
   background: rgba(186, 80, 163, 0.356);  
   padding: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   color: rgba(255, 255, 255, 0.71);
-  height: 40px;
+  height: 60px;
   color: white;
   margin-bottom: 20px;
   
@@ -103,7 +103,15 @@ textarea:focus{
   font-size: 0.9rem;
   margin-top: 10px;
 }
-
+.button-form{
+  display: flex;
+  flex-direction: column;
+  
+}
+.avatar-title{
+  display: flex;
+  gap: 30px;
+}
 button{
   background-color: rgba(246, 125, 252, 0.059);
   border-radius: 20px;
@@ -122,24 +130,20 @@ button:disabled {
   cursor: not-allowed;
 }
 .block-form {
-    top:20px;
-    right:20px;
     max-height: 30vh;
     position: flex;
-  width: 300px;
+  width: 400px;
   background: rgba(233, 163, 248, 0.397);
   backdrop-filter: blur(10px);
   padding: 10px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   color: white;
-  height: auto;
+  height: 300px;
   z-index: 999;
   overflow-y: auto;
-  overflow-x: hidden;
-  display:flex;
+  display:flexbox;
   flex-direction: column;
-  gap:10px;
+  margin-bottom: 20px;
+  align-content: center;
 }
 .floating-group-center {
   position: fixed;
@@ -171,4 +175,70 @@ button:disabled {
 .block-form::-webkit-scrollbar-thumb:hover {
   background: rgba(186, 80, 163, 0.8);
   cursor: pointer;
+}
+
+.singleU-field::placeholder{
+  color: rgba(255, 255, 255, 0.822);
+}
+
+.singleU-field {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  width: 280px;
+  transition: all 0.3s ease;
+  background: rgba(186, 80, 163, 0.356);  
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.71);
+  height: 15px;
+  color: white;
+  margin-bottom: 20px;
+  overflow: hidden;
+  
+}
+.singleU-field::placeholder {
+  color: rgba(255, 255, 255, 0.822);
+}
+.singleU-field:focus {
+  border-color: rgba(224, 207, 223, 0.8);
+  
+  box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
+  
+}
+
+.createGroup-form {
+    max-height: 30vh;
+  width: 300px;
+  background: rgba(233, 163, 248, 0.397);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  color: white;
+  height: 150px;
+  z-index: 999;
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.createGroup-form form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.invite-form {
+    max-height: 30vh;
+  width: 300px;
+  background: rgba(233, 163, 248, 0.397);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  color: white;
+  height: auto;
+  z-index: 999;
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }

@@ -3,26 +3,19 @@
 
     <div>
         <div>
-            <h1> (╭ರ_•́)</h1>
+            <h1> tell me ai ....(╭ರ_•́)</h1>
         </div>
 <div class="error-message">
     {{ errorMessage }}
             </div>
         <div>
           <textarea readonly v-model="formattedResponse" label="ai" placeholder="it's me!. ai"  class="input-field"/>
-
         </div>
-        <div >
-        <button @click="riddle">∘ ∘ ∘ ( °ヮ° ) riddles? ∘ ∘ ∘ ( °ヮ° )</button>
-        <div>
-        <button @click="joke">(  ≧ᗜ≦) jokes (  ≧ᗜ≦)</button>
-        </div>
-        <div>
-        <button @click="kaomoji">✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩ kaomoji ✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩</button>
-        </div>
-      </div>
-        <div>
-        </div>
+        <div class="button-form">
+              <button @click="riddle">∘ ∘ ∘ ( °ヮ° ) riddles? ∘ ∘ ∘ ( °ヮ° )</button>
+             <button @click="joke">(  ≧ᗜ≦) jokes (  ≧ᗜ≦)</button>
+                    <button @click="kaomoji">✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩ kaomoji ✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩</button>
+            </div>
         <div v-if="loading" class="loading-overlay">
             <div class="loading-kaomoji">
               (｡♥‿♥｡)
