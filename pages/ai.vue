@@ -5,8 +5,8 @@
         <div>
             <h1> tell me ai ....(╭ರ_•́)</h1>
         </div>
-<div class="error-message">
-    {{ errorMessage }}
+<div class="any-message">
+    {{ anyMessage }}
             </div>
         <div>
           <textarea readonly v-model="formattedResponse" label="ai" placeholder="it's me!. ai"  class="input-field"/>
@@ -33,7 +33,7 @@ const loading = ref(false);
 const userMessage = ref('');
 const messages = ref([]);
 const formattedResponse=ref();
-const errorMessage=ref('');
+const anyMessage=ref('');
 async function riddle() {
  loading.value=true;
     userMessage.value ="you are an expert in making the funniest riddles for children between 7 to 9 years old. invent yourself 2 riddles in english and 2 in spanish with no answers. renew the riddles everytime I ask you. remember to invent them don't repeat"; 
@@ -56,7 +56,7 @@ async function riddle() {
 
         }
         catch (error) {
-            showTempMessage(errorMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
+            showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
             console.error('Error getting riddle', error);
         }finally{ 
           loading.value = false;
@@ -90,7 +90,7 @@ async function joke() {
         }
         catch (error) {
             console.error('Error getting jokes', error);
-                        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
+                        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
             
         } finally{ 
           loading.value = false;
@@ -124,7 +124,7 @@ async function fact() {
         }
         catch (error) {
             console.error('Error getting facts', error);
-                        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
+                        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
         }finally{ 
           loading.value = false;
           userMessage.value=''
@@ -156,7 +156,7 @@ async function kaomoji() {
         }
         catch (error) {
             console.error('Error getting facts', error);
-                        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
+                        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
         }finally{ 
           loading.value = false;
           userMessage.value=''

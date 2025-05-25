@@ -493,6 +493,63 @@ app.put('/api/add_users', async (req, res) => {
     }
 
 })
+//api leave groups
+app.delete('/api/v1/GroupUser',async (req,res)=>{
+    const {userName,token,group_id}=req.body;
+    if(!userName||!token||!group_id){
+        console.error('missing fields');
+        return res.status(400).json({
+            error:'missing fields'
+        })
+    }
+    console.log('token is valid');
+    const db = await open({
+        filename:dbPath,
+        driver:sqlite3.Database
+    })
+    await db.run('PRAGMA foreign_keys=ON');
+    const isMyGroupQuery=`SELECT * FROM groups WHERE username=? AND group_id=?
+    `;
+    try{
+        const isOwnerResponse=await db.all(isMyGroupQuery,[userName,group_id])
+        console.log('isOwner',isOwnerResponse)
+        if (isOwnerResponse.length>0){
+            console.error('you cannot leave your own group');
+            return res.status(403).json({
+                error:'cannot leave your own group'
+            })
+        }
+    }
+    catch (err){
+        console.error(err)
+        return res.status(500).json({
+            error:'error querying db'
+        })
+    }
+    try{
+        console.log('deleting from user_groups username',userName)
+        const deleteUserFromGroupQ=`DELETE FROM user_groups WHERE username=? AND group_id=?
+        `;
+        console.log('deleting from user_groups username',group_id)
+        const deleteBubblesFromGroup=`DELETE FROM bubbles WHERE username=? AND group_id=? 
+        `;
+        await db.run('BEGIN TRANSACTION');
+        await db.run(deleteUserFromGroupQ,[userName,group_id]);
+        await db.run(deleteBubblesFromGroup,[userName,group_id]);
+        const response = await db.run('COMMIT');
+        console.log('transaction completed',response);
+        return res.status(200).json({
+            message:'transaction completed'
+        });
+    }
+    catch(err){
+        await db.run('ROLLBACK');
+        console.error('error during leaving group transaction');
+        return res.status(500).json({
+            error:'error leaving group'
+        })
+    }
+})
 //delete users
 app.delete('/api/delete_users', async (req, res) => {
     const { userName, token, name, users } = req.body;
@@ -559,7 +616,7 @@ app.delete('/api/delete_users', async (req, res) => {
     }
 
 })
-//api get users_group
+//api get  owned groups
 app.get('/api/get_users_groups', async (req, res) => {
     const { userName, token } = req.query;
     if (!userName || !token) {
@@ -576,7 +633,7 @@ app.get('/api/get_users_groups', async (req, res) => {
             driver: sqlite3.Database
         })
         await db.run('PRAGMA foreign_keys = ON');
-        const query = `select * FROM groups WHERE username=?
+        const query = `SELECT * FROM groups WHERE username=?
         `;
         try {
             const groups = await db.all(query, [userName])
@@ -1127,6 +1184,8 @@ return res.status(400).json({
 })
 }
 })
+
+
 //run the backend on port 3000
 app.listen(3000, () => {
     console.log(`Server is running on port ${3000}`);

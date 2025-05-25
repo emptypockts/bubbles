@@ -19,7 +19,7 @@
                 </button>
             </div>
             <div style="font-size: 14px">
-                {{ errorMessage }}
+                {{ anyMessage }}
             </div>
         </form>
         </div>
@@ -29,7 +29,7 @@
 
 import { ref } from 'vue';
 const groupName = ref('');
-const errorMessage = ref('');
+const anyMessage = ref('');
 const props = defineProps({
     userName: String
 });
@@ -55,7 +55,7 @@ const createGroup = async () => {
         if (groupFilter.length > 0) {
             groupExists.value = true;
             console.error('group exists')
-            showTempMessage(errorMessage, 'group exists already try another name (￣▽￣;)ゞ', 2000);
+            showTempMessage(anyMessage, 'group exists already try another name (￣▽￣;)ゞ', 2000);
 
         }
         else {
@@ -72,12 +72,12 @@ const createGroup = async () => {
                     }
                 })
                 console.log('group created successfully', response)
-                showTempMessage(errorMessage, '｡ﾟ( ﾟ^∀^ﾟ)ﾟ｡ your group is ready!', 2000);
+                showTempMessage(anyMessage, '｡ﾟ( ﾟ^∀^ﾟ)ﾟ｡ your group is ready!', 2000);
 
             }
             catch (err) {
                 console.error('error trying to create group', err)
-                showTempMessage(errorMessage, 'oopsie we hit a snag, try again later (｡•́︿•̀｡)', 2000);
+                showTempMessage(anyMessage, 'oopsie we hit a snag, try again later (｡•́︿•̀｡)', 2000);
 
             }
 
@@ -85,7 +85,7 @@ const createGroup = async () => {
     }
     catch (err) {
         console.error('error trying to call api', err)
-        showTempMessage(errorMessage, 'oopsie we hit a snag, try again later (｡•́︿•̀｡)', 2000);
+        showTempMessage(anyMessage, 'oopsie we hit a snag, try again later (｡•́︿•̀｡)', 2000);
     }
     finally {
 

@@ -1,12 +1,19 @@
 <template>
   <div v-if="play" class="app-container" :class="{ blurred: blurrBackground }">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <div class="bubble-container">
       <div v-if="(!selectedGroupName)">
         <h1 style="font-size: 14px; color:white">you are in: ⋆✴︎˚｡⋆playground⋆✴︎˚｡⋆</h1>
       </div>
       <div v-else>
         <h1 style="font-size: 14px; color:white">you are in: ⋆✴︎˚｡⋆{{ selectedGroupName }}⋆✴︎˚｡⋆</h1>
+        <button v-if="isOwned" @click="deleteGroup">
+          delete group (つ﹏<。)ノシ 
+        </button>
+          <button v-if="(!isOwned)" @click="leaveGroup">
+            leave group (つ﹏<。)ノシ 
+          </button>
+          <p v-if="anyMessage" class="any-message">{{ anyMessage }}</p>
       </div>
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
@@ -160,6 +167,8 @@ const invitationCount = ref(0);
 const invitationCenterDisp = ref(false);
 const userInvitations = ref([]);
 const blurrBackground = ref(false);
+const anyMessage = ref('');
+const isOwned = ref('');
 const guiForm = ref('');
 const handleClick=()=>{
   if (invitationCount.value>0){
@@ -342,7 +351,7 @@ const createGroup = async () => {
 }
 const go_to_group = async (groupId, groupName) => {
   console.log('go to group', groupId);
-  console.log('group callced', groupName);
+  console.log('group called', groupName);
   selectedGroupId.value = groupId;
   selectedGroupName.value = groupName;
   group_id.value = groupId;
@@ -352,6 +361,10 @@ const go_to_group = async (groupId, groupName) => {
   allLastLoadedAt.value = null;
   await get_bubbles();
   await get_bubbles_all();
+  await get_my_groups();
+  await get_groups();
+  isOwned.value = groupsNames.value.some(element=>element.group_id===groupId)
+  
 }
 const get_my_groups = async () => {
   console.log('getting my groups')
@@ -366,7 +379,6 @@ const get_my_groups = async () => {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'GET'
     });
-    console.log('my groups', response)
     if (response && response.length > 0) {
       myGroups.value = response.map(myGroup => ({
         ...myGroup
@@ -378,6 +390,68 @@ const get_my_groups = async () => {
 
   }
 };
+const leaveGroup = async()=>{
+  console.log('leaving group', selectedGroupName.value);
+  const token=localStorage.getItem('token');
+  const userName=localStorage.getItem('userName');
+  const groupId=group_id.value;
+  console.log('delete groupID',groupId)
+  if (confirm('are you sure you want to leave this group?')){
+    try{
+      const response = await $fetch('/api/v1/GroupUser',{
+        baseURL:useRuntimeConfig().public.apiBaseURL,
+        method:'DELETE',
+        body:{
+          userName:userName,
+          token:token,
+          group_id:groupId
+        }
+      })
+      console.log(response);
+      showTempMessage(anyMessage,`(￣▽￣;)ゞ ${response.message}`,2000);
+    }
+    catch(err){
+      console.error(err);
+      showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+
+    }
+    finally{
+      myGroups.value=[];
+      go_to_group(null,null);
+      
+    }
+  }
+}
+const deleteGroup=async() =>{
+  console.log('delete group ',selectedGroupName.value)
+  const token=localStorage.getItem('token');
+  const userName = localStorage.getItem('userName')
+  const deleteGroupName =selectedGroupName.value 
+  if (confirm('are you sure you want to delete this group?')){
+    try{
+  const response = await $fetch('api/delete_group_id',{
+    baseURL:useRuntimeConfig().public.apiBaseURL,
+    method:'DELETE',
+    body:{
+      userName:userName,
+      token:token,
+      name:deleteGroupName
+    }
+  })
+console.log(response);
+showTempMessage(anyMessage,`(￣▽￣;)ゞ ${response.message}`,2000);
+  }
+  catch(err){
+    console.error(err);
+    showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+  }
+  finally{
+    myGroups.value=[];
+    go_to_group(null,null);
+  }
+  }
+  
+}
 const get_groups = async () => {
   console.log('getting groups')
   const token = localStorage.getItem('token');
@@ -404,6 +478,7 @@ const get_groups = async () => {
 
   }
 };
+
 const getInvitations = async () => {
   console.log('pulling invitations');
   const token = localStorage.getItem('token');
@@ -499,7 +574,7 @@ const get_bubbles_all = async () => {
       console.log('response', response)
       const allBubblesWithPosition = response.map(bubble => ({
         ...bubble,
-        left: Math.random() * 60,
+        left: Math.random() *60,
       }));
       allBubbles.value.push(...allBubblesWithPosition)
       allLastLoadedAt.value = response[response.length - 1].created_at;
@@ -545,7 +620,7 @@ const broadcast_all_users = async () => {
   )
 };
 const handleNewBubble = (newBubble) => {
-  newBubble.left = Math.random() * 90;
+  newBubble.left = Math.random() *60;
   bubbles.value.push(newBubble);
   console.log('handling new bubble: ', newBubble);
 
@@ -666,9 +741,7 @@ transition:transform 0.2s;
 @media (max-width: 480px) {
   .bubble-form {
     max-width: 200px;
-    /* Even smaller for very small screens */
     top: 10px;
-    /* Adjust position */
     right: 10px;
     padding: 5px;
   }
@@ -699,8 +772,8 @@ transition:transform 0.2s;
 }
 .my-bubble {
   position: relative;
-  width: 280px;
-  height: 280px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   background: radial-gradient(circle at 20% 20%,
       rgba(255, 255, 255, 0.683),
@@ -716,12 +789,13 @@ transition:transform 0.2s;
   text-align: center;
   font-size: 10px;
   color: #f90b9ac9;
-  animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
+  animation:drift 20s infinite ease-in-out;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
   overflow: hidden;
   z-index: 1;
+  margin-bottom: 10px;
 }
 .my-bubble::before,
 .bubble::before {
@@ -745,7 +819,7 @@ transition:transform 0.2s;
   }
 
   50% {
-    transform: translateX(100px);
+    transform: translateX(30px);
   }
 }
 .bubble-username,
@@ -769,8 +843,8 @@ transition:transform 0.2s;
 }
 .bubble {
   position: relative;
-  width: 250px;
-  height: 250px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   background: radial-gradient(circle at 20% 20%,
       rgba(255, 255, 255, 0.6),
@@ -783,23 +857,17 @@ transition:transform 0.2s;
     0 0 30px rgba(255, 255, 255, 0.3) inset;
   display: flex;
   flex-direction: column;
-  /* Stack items vertically */
   justify-content: center;
-  /* Vertically align items in the center */
-  align-items: left;
-  /* Horizontally align items in the center */
+  align-items:left;
   text-align: center;
   font-size: 10px;
   color: #f90b9ac9;
-  animation: float 20s infinite ease-in-out, drift 20s infinite ease-in-out;
+  animation:drift 20s infinite ease-in-out;
   padding: 10px;
-  /* Add padding for spacing inside the bubble */
   border: 1px solid rgba(255, 255, 255, 0.5);
-  /* Semi-transparent border */
   box-sizing: border-box;
-  /* Ensure padding doesn't affect bubble size */
   overflow: hidden;
-  /* Ensure content stays within the bubble */
+  margin-bottom: 10px;
 }
 .bubble::before {
   content: '';
@@ -832,11 +900,15 @@ transition:transform 0.2s;
   
 }
 .bubble-container {
-  max-width: 100%;
-  max-height: 90vh;
-  overflow: auto;
-  overflow-x: hidden;
-  width: 90%;
+  max-width: 1200px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: left;
+  margin: 0 auto;
+  padding: 1rem;
+  gap: 1rem;
 
 }
 .bubble-container::-webkit-scrollbar {

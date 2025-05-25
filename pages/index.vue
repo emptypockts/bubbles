@@ -27,8 +27,8 @@
             <button :disabled="isLoading" >
               {{ isLoading ? 'Logging in...' : 'Login' }}
             </button>
-            <div class="error-message" v-if="errorMessage">
-            {{ errorMessage }}
+            <div class="any-message" v-if="anyMessage">
+            {{ anyMessage }}
           </div>
           </div>
 
@@ -46,12 +46,12 @@ import {useRouter} from 'vue-router';
 const userName= ref('');
 const password = ref('');
 const isLoading=ref(false);
-const errorMessage=ref('');
+const anyMessage=ref('');
 const router=useRouter();
 
 const handleLogin= async()=>{
     isLoading.value=true;
-    errorMessage.value='';
+    anyMessage.value='';
     try{
         const response = await $fetch('/api/login_user',{
             baseURL:useRuntimeConfig().public.apiBaseURL,
@@ -68,7 +68,7 @@ const handleLogin= async()=>{
         router.push('/playground')
     }catch(err){
        console.log(err);
-       showTempMessage(errorMessage,'oopsie we hit a snag, try again later (｡•́︿•̀｡)',2000);
+       showTempMessage(anyMessage,'oopsie we hit a snag, try again later (｡•́︿•̀｡)',2000);
     }finally{
         isLoading.value=false;
 

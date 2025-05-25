@@ -11,11 +11,11 @@
 <button @click="removeUserFromGroup(user.username)">remove</button>
 </div>
 <input v-model="lookForUser"
-@input="searchUsers"
+@input="e =>debouncedSearchUsers(e.target.value)"
 placeholder="search...."
 class="singleU-field"
 />
-<p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+<p v-if="anyMessage" class="any-message">{{ anyMessage }}</p>
 <div v-if="loading_search">
 searching ...
 </div>
@@ -28,12 +28,11 @@ searching ...
 <script setup>
 
 import { ref,onMounted } from 'vue';
-import { userGroupStore} from '@/stores/group'
-const groupStore=userGroupStore();
+import { debounce } from '@/utils/debounce'
 const { $websocket } = useNuxtApp();
 const loading_users=ref (false);
 const loading_search = ref(false);
-const errorMessage=ref('');
+const anyMessage=ref('');
 const props= defineProps({
     userName:String,
     group_id:Number,
@@ -47,27 +46,27 @@ const token = localStorage.getItem('token')
 const fetchGroupUsers= async()=>{
     console.log('getting users')
  loading_users.value=true;
-//try{
-//     const params = new URLSearchParams({
-//         userName:props.userName,
-//         token:token,
-//         group_id:props.group_id
-//     })
-//     const response = await $fetch(`/api/get_users_from_group?${params.toString()}`,{
-//         baseURL:useRuntimeConfig().public.apiBaseURL,
-//         method:'GET'
-//     });
-//     groupUsers.value=response;
-// }
-// catch(err){
-//     console.log('error calling api',err);
-//     showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+try{
+    const params = new URLSearchParams({
+        userName:props.userName,
+        token:token,
+        group_id:props.group_id
+    })
+    const response = await $fetch(`/api/get_users_from_group?${params.toString()}`,{
+        baseURL:useRuntimeConfig().public.apiBaseURL,
+        method:'GET'
+    });
+    groupUsers.value=response;
+}
+catch(err){
+    console.log('error calling api',err);
+    showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
 
-// }finally{
-//     loading_users.value=false;
-// }
+}finally{
+    loading_users.value=false;
+}
 
-groupUsers.value = await groupStore.getUsers(props.group_id,props.userName)
+
 
 };
 const fetchUsersPending= async()=>{
@@ -92,7 +91,7 @@ const fetchUsersPending= async()=>{
     }   
     catch(err){
         console.error(err);
-        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
     }
     finally{
         loading_search.value=false;
@@ -115,15 +114,18 @@ const fetchUsersNotInGroup = async ()=>{
     }
     catch (err){
         console.log('error calling api',err);
-        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
     }
     finally{
         loading_search.value=false;
     }
 }
-const searchUsers=async()=>{
+const searchUsers=async(query)=>{
+    if (query){
     await fetchUsersNotInGroup();
-}
+    }
+};
+const debouncedSearchUsers = debounce(searchUsers,500);
 const removeUserFromGroup = async(usernameToRemove)=>{
     try{
     const response = await $fetch('/api/delete_users',{
@@ -141,7 +143,7 @@ const removeUserFromGroup = async(usernameToRemove)=>{
 }
 catch (err){
     console.error('error trying to call the api: ',err);
-    showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+    showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
 
 }
 }
@@ -168,7 +170,7 @@ const inviteUser = async(selectedUser)=>{
     }
     catch(err){
         console.error('error trying to call the api')
-        showTempMessage(errorMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
     }
 }
 onMounted (async ()=>{

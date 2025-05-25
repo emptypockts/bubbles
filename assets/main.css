@@ -98,7 +98,7 @@ textarea:focus{
   box-shadow: 0 0 10px rgba(250, 101, 242, 0.4);
   
 }
-.error-message {
+.any-message {
   color: #faf9f9; 
   font-size: 0.9rem;
   margin-top: 10px;
