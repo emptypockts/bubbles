@@ -182,12 +182,15 @@ function closeGui() {
     case 'modifyGroup':
       case 'createGroup':
       get_my_groups();
+      get_groups();
       break
     case 'modifyInvitation':
-      console.log('case of invites')
       getInvitations();
+      get_my_groups();
+      get_groups();
       break
   }
+  console.log('turning off gui')
   guiForm.value = null;
   blurrBackground.value = false;
 }

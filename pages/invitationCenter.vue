@@ -6,6 +6,9 @@
     <h1>
       invitations
     </h1>
+    <div v-if="!invites.length">
+      ＼(＾▽＾)／ All caught up!
+    </div>
     <div v-for="invitation in invites" :key="invitation.id" class="invitation-card">
       <div class="invitation-info">
         <div><strong>Invited to:</strong> {{ invitation.name }}</div>
