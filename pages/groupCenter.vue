@@ -3,9 +3,11 @@
     <button @click="$emit('close')">
         ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
+    <div class="invite-list">
  <div v-for="pendingUser in pendingList" :key="pendingUser.invited_user">
     <strong>{{ pendingUser.invited_user }}</strong> invite already sent
  </div>   
+</div>
 <div v-for="user in groupUsers" :key="user.username">
 {{ user.username }}
 <button @click="removeUserFromGroup(user.username)">remove</button>
@@ -167,6 +169,7 @@ const inviteUser = async(selectedUser)=>{
             data:response
         }
         $websocket.send(JSON.stringify(inviteObject))
+        pendingList.value.push(response)
     }
     catch(err){
         console.error('error trying to call the api')

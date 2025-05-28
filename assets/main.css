@@ -242,3 +242,8 @@ button:disabled {
   justify-content: center;
   gap: 20px;
 }
+.invite-list{
+  background: transparent;
+  overflow: auto;
+  max-height: 100px;
+}

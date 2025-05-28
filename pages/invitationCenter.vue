@@ -1,11 +1,10 @@
 <template>
-  <div class="block-form">
+  <div class="invite-form">
     <button @click="$emit('close')">
       ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
     <h1>
       invitations
-
     </h1>
     <div v-for="invitation in invites" :key="invitation.id" class="invitation-card">
       <div class="invitation-info">
@@ -34,7 +33,7 @@ const props = defineProps({
   invitations: Array
 })
 const invites = ref([...props.invitations]);
-console.log('invites',invites);
+
 const respondInvite = async (group, isAccepted) => {
   try{
     
@@ -57,9 +56,8 @@ const respondInvite = async (group, isAccepted) => {
         }
       })
       console.log('invitation changed successfully')
+      console.log('invites',invites.value)
     }
-
-  
 
   else {
     console.log('you declined this invitation', group);
@@ -86,7 +84,7 @@ const respondInvite = async (group, isAccepted) => {
     finally{
       
       invites.value = invites.value.filter(invite =>invite.name!==group);
-      console.log('final invites',invites.value)
+      
     }
 
 }
