@@ -1,5 +1,5 @@
 <template>
-  <div class="block-form">
+  <div class="invite-form">
     <button @click="$emit('close')">
       ˗ˏˋ ♡ ˎˊ˗close˗ˏˋ ♡ ˎˊ˗
     </button>
@@ -7,6 +7,9 @@
       invitations
 
     </h1>
+    <div v-if="!invites.length">
+      ＼(＾▽＾)／ All caught up!
+    </div>
     <div v-for="invitation in invites" :key="invitation.id" class="invitation-card">
       <div class="invitation-info">
         <div><strong>Invited to:</strong> {{ invitation.name }}</div>
