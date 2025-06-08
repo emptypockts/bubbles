@@ -82,8 +82,8 @@
           placeholder="post your bubble" 
           class="input-field" />
           <div class="button-form">
-            <button :disabled="isLoading || message.length > 80" >
-              💭post {{ 80 - message.length }} characters left💭
+            <button :disabled="isLoading || message.length > 150" >
+              💭post {{ 150 - message.length }} characters left💭
             </button>
             <button @click="loadMore"  :disabled="isLoading">
                ｡⋆*°○❀load more❀○°*⋆｡
@@ -707,10 +707,10 @@ transition:transform 0.2s;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  background-image: url('https://plus.unsplash.com/premium_photo-1664037539537-1961b6e2e53f?q=80&w=2174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-  background-size: cover;
+  background-image:url('public/bubbles2.jpg');
+  background-size:100%;
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat: repeat;
   padding: 20px;
   background-color: rgba(241, 163, 237, 0.071);
   min-height: 100vh;

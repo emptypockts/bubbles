@@ -12,8 +12,8 @@
           <textarea readonly v-model="formattedResponse" label="ai" placeholder="it's me!. ai"  class="input-field"/>
         </div>
         <div class="button-form">
-              <button @click="riddle">∘ ∘ ∘ ( °ヮ° ) riddles? ∘ ∘ ∘ ( °ヮ° )</button>
-             <button @click="joke">(  ≧ᗜ≦) jokes (  ≧ᗜ≦)</button>
+              <button @click="witty">∘ ∘ ∘ ( °ヮ° ) witty? ∘ ∘ ∘ ( °ヮ° )</button>
+             <button @click="joke">(  ≧ᗜ≦) y la queso (  ≧ᗜ≦)</button>
                     <button @click="kaomoji">✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩ kaomoji ✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩</button>
             </div>
         <div v-if="loading" class="loading-overlay">
@@ -34,30 +34,47 @@ const userMessage = ref('');
 const messages = ref([]);
 const formattedResponse=ref();
 const anyMessage=ref('');
-async function riddle() {
+async function witty() {
  loading.value=true;
-    userMessage.value ="you are an expert in making the funniest riddles for children between 7 to 9 years old. invent yourself 2 riddles in english and 2 in spanish with no answers. renew the riddles everytime I ask you. remember to invent them don't repeat"; 
+    userMessage.value ="so funny that this thing..."
+    const agent =`
+    you are a professional comedy writter for teenagers 10 years old and you only write about things and animals not humans, friends, family or tragedies.
+    and you will provide the answer with the following structure in a witty genz vibe all in lower case:
+    **caption:**
+    `
     if (userMessage.value.trim()) {
+      const payload = {
+        "system_instruction":{
+          "parts":[{
+            "text":agent
+          }]
+        },
+        "contents":[
+          {
+            "parts":[
+            {
+              "text":userMessage.value
+            }
+          ]
+          }
+        ]
+      }
         try {
-
-            console.log("Sending query",userMessage.value)
-            console.log("loading status:", loading)
-            const response = await $fetch('/api/ai_riddle', {
+            
+            const response = await $fetch('/api/v1/gemini', {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'POST',
       body: {
-        query: userMessage.value,
+        query: payload
       }
     })
-    
-    formattedResponse.value=response.riddle .replace(/\n/g, '\n').trim();
-    console.log('formatted response',formattedResponse)
+    formattedResponse.value=response.post
             
 
         }
         catch (error) {
-            showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
-            console.error('Error getting riddle', error);
+            showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error}`,2000);
+            console.error('Error getting witty post', error);
         }finally{ 
           loading.value = false;
           userMessage.value='';
@@ -69,28 +86,44 @@ async function riddle() {
 async function joke() {
   loading.value=true;
 
-    userMessage.value ="you are an expert in making the funniest jokes for children between 7 to 9 years old. invent 4 new jokes 2 in english and 2 in spanishh. renew the jokes everytime I ask you. remember to invent them, don't repeat"; 
+    userMessage.value ="esta cosa no sirve!"; 
+    const agent =`
+    eres una escritora profesional de comedia para adolescentes de 10 a. tu estilo es 'mordaz' y vas a generar posts de instagram con esta unica estructura
+    **caption:**
+    `
     if (userMessage.value.trim()) {
         try {
 
-          console.log("Sending query",userMessage.value)
-            console.log("loading status:", loading)
-            const response = await $fetch('/api/ai_riddle', {
+    
+          const payload = {
+        "system_instruction":{
+          "parts":[{
+            "text":agent
+          }]
+        },
+        "contents":[
+          {
+            "parts":[
+            {
+              "text":userMessage.value
+            }
+          ]
+          }
+        ]
+      }
+            const response = await $fetch('/api/v1/gemini', {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'POST',
       body: {
-        query: userMessage.value,
+        query: payload
       }
     })
     
-    formattedResponse.value=response.riddle .replace(/\n/g, '\n').trim();
-    console.log('formatted response',formattedResponse)
-            
-
+    formattedResponse.value=response.post
         }
         catch (error) {
             console.error('Error getting jokes', error);
-                        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
+            showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
             
         } finally{ 
           loading.value = false;
@@ -100,37 +133,6 @@ async function joke() {
     }
 }
 
-async function fact() {
-  loading.value=true;
-
-    userMessage.value ="you are an expert in making the most interesting facts for children between 7 to 9 years old. give me 2 facts in english and 2 in spanish. renew the facts  everytime I ask you"; 
-    if (userMessage.value.trim()) {
-        try {
-
-          console.log("Sending query",userMessage.value)
-            console.log("loading status:", loading)
-            const response = await $fetch('/api/ai_riddle', {
-      baseURL: useRuntimeConfig().public.apiBaseURL,
-      method: 'POST',
-      body: {
-        query: userMessage.value,
-      }
-    })
-    
-    formattedResponse.value=response.riddle .replace(/\n/g, '\n').trim();
-    console.log('formatted response',formattedResponse)
-            
-
-        }
-        catch (error) {
-            console.error('Error getting facts', error);
-                        showTempMessage(anyMessage,`(￣▽￣;)ゞ ${error.response._data.error}`,2000);
-        }finally{ 
-          loading.value = false;
-          userMessage.value=''
-        }
-    }
-}
 
 async function kaomoji() {
   loading.value=true;

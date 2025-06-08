@@ -1148,7 +1148,7 @@ DELETE FROM bubbles WHERE bubble_id=? AND username =?
     }
 })
 //connect ai
-app.post('/api/ai_riddle', async (req, res) => {
+app.post('/api/v1/gemini', async (req, res) => {
     const { query } = req.body;
     const params = [query]
     if (!query) {
@@ -1158,23 +1158,20 @@ app.post('/api/ai_riddle', async (req, res) => {
         });
     }
     try{
+
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         generationConfig: {
             temperature: 0.9,
             topP: 0.9
         }
     });
-    const prompt = query;
-    const randomElement = Math.random().toString(36).substring(7);
-    const dynamicQuery = `${randomElement} ${prompt}`
-    const result = await model.generateContent(dynamicQuery);
-    console.log('query to ai: ', dynamicQuery)
-    const riddle = result.response.text()
-    console.log(result.response.text());
+    console.log(query)
+    const result = await model.generateContent(query);
+    const post = result.response.text()
     return res.status(200).json({
-        riddle: riddle
+        post: post
     })
 }
 catch (error){
