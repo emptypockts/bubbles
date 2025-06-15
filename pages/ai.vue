@@ -14,7 +14,7 @@
         <div class="button-form">
               <button @click="witty">∘ ∘ ∘ ( °ヮ° ) witty? ∘ ∘ ∘ ( °ヮ° )</button>
              <button @click="joke">(  ≧ᗜ≦) y la queso (  ≧ᗜ≦)</button>
-                    <button @click="kaomoji">✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩ kaomoji ✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩</button>
+              <button @click="kaomoji">✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩ kaomoji ✧˚₊‧✧˖°..𖥔 ݁ ˖⋆｡ °✩</button>
             </div>
         <div v-if="loading" class="loading-overlay">
             <div class="loading-kaomoji">
@@ -36,10 +36,10 @@ const formattedResponse=ref();
 const anyMessage=ref('');
 async function witty() {
  loading.value=true;
-    userMessage.value ="so funny that this thing..."
+    userMessage.value ="a disaster situation with my food"
     const agent =`
     you are a professional comedy writter for teenagers 10 years old and you only write about things and animals not humans, friends, family or tragedies.
-    and you will provide the answer with the following structure in a witty genz vibe all in lower case:
+    and you will provide the answer with the following structure in a witty genz vibe all in lower case and max 150 characters:
     **caption:**
     `
     if (userMessage.value.trim()) {
@@ -85,10 +85,9 @@ async function witty() {
 
 async function joke() {
   loading.value=true;
-
-    userMessage.value ="esta cosa no sirve!"; 
+    userMessage.value ="una situacion con mi comida"; 
     const agent =`
-    eres una escritora profesional de comedia para adolescentes de 10 a. tu estilo es 'mordaz' y vas a generar posts de instagram con esta unica estructura
+    eres una escritora profesional de comedia para adolescentes de 10 a. tu estilo es 'mordaz' y vas a generar posts de instagram con esta unica estructura con maximo 150 caracteres
     **caption:**
     `
     if (userMessage.value.trim()) {
@@ -136,14 +135,13 @@ async function joke() {
 
 async function kaomoji() {
   loading.value=true;
-
     userMessage.value ="you are an expert in making the most beautiful elaborated kaomoji for children between 7 to 9 years old. give me  4 kaomojis and explain them  in english and in spanish. renew them anytime I call you"; 
     if (userMessage.value.trim()) {
         try {
 
           console.log("Sending query",userMessage.value)
             console.log("loading status:", loading)
-            const response = await $fetch('/api/ai_riddle', {
+            const response = await $fetch('/api/v1/gemini', {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'POST',
       body: {
@@ -151,10 +149,8 @@ async function kaomoji() {
       }
     })
     
-    formattedResponse.value=response.riddle .replace(/\n/g, '\n').trim();
-    console.log('formatted response',formattedResponse)
-            
-
+    formattedResponse.value=response.post.replace(/\n/g, '\n').trim();
+  
         }
         catch (error) {
             console.error('Error getting facts', error);

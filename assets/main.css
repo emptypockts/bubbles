@@ -32,7 +32,6 @@ textarea:focus{
 .input-field::placeholder{
   color: rgba(255, 255, 255, 0.822);
 }
-
 .input-field {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -74,7 +73,6 @@ textarea:focus{
 .search-field::placeholder{
   color: rgba(255, 255, 255, 0.822);
 }
-
 .search-field {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -106,7 +104,8 @@ textarea:focus{
 .button-form{
   display: flex;
   flex-direction: column;
-  
+  gap:5px;
+
 }
 .avatar-title{
   display: flex;
@@ -120,6 +119,7 @@ button{
   color:white;
   cursor: pointer;
   transition:transform .5s ease, color 3s ease-in-out;
+  
 }
 button:hover{
         transform:scale(1.05);
@@ -144,6 +144,19 @@ button:disabled {
   flex-direction: column;
   margin-bottom: 20px;
   align-content: center;
+}
+.button-form-groups {
+  display: flex;
+  flex-direction: column;
+  gap:5px;
+  width:20vh;
+
+}
+.button-form-groups-rows {
+  display: flex;
+  flex-direction: row;
+  gap:5px;
+  width:40vh;
 }
 .floating-group-center {
   position: fixed;
