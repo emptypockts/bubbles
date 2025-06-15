@@ -8,12 +8,10 @@
       <div v-else>
         <h1 style="font-size: 14px; color:white">you are in: ⋆✴︎˚｡⋆{{ selectedGroupName }}⋆✴︎˚｡⋆</h1>
         <button v-if="isOwned" @click="deleteGroup">
-          delete group (つ﹏<。)ノシ 
-        </button>
-          <button v-if="(!isOwned)" @click="leaveGroup">
-            leave group (つ﹏<。)ノシ 
-          </button>
-          <p v-if="anyMessage" class="any-message">{{ anyMessage }}</p>
+          delete group (つ﹏<。)ノシ </button>
+            <button v-if="(!isOwned)" @click="leaveGroup">
+              leave group (つ﹏<。)ノシ </button>
+                <p v-if="anyMessage" class="any-message">{{ anyMessage }}</p>
       </div>
       <div>
         <div v-for="bubble in sortedBubbles" :key="bubble.id" :style="getBubbleStyle(bubble)"
@@ -42,51 +40,40 @@
       </div>
 
     </div>
-    
+
     <div class="right panel">
 
       <div class="block-form">
-<div class="avatar-title">
-      <h1>🫧bubbles🫧</h1>
-           
-        <div class="avatar-container">
-          <div class="avatar-wrapper">
-            <img 
-            v-if="userAvatar" 
-            :src="userAvatar" 
-            alt="User Avatar" 
-            class="avatar" 
-            :title="userName"
-            :class="{clickable:invitationCount>0}"
-            @click="handleClick" 
-              />
-            <span v-if="invitationCount > 0" class="badge">
-              {{ invitationCount }}
-            </span>
-          </div>
-          
-          <div class="menu-container">  
-            <button class="dots" @click="toggleMenu">
-              &#x22EE;
-            </button>
-          </div>
-          <div v-if="showMenu">
-            <button @click="logout">logout</button>
+        <div class="avatar-title">
+          <h1>🫧bubbles🫧</h1>
+
+          <div class="avatar-container">
+            <div class="avatar-wrapper">
+              <img v-if="userAvatar" :src="userAvatar" alt="User Avatar" class="avatar" :title="userName"
+                :class="{ clickable: invitationCount > 0 }" @click="handleClick" />
+              <span v-if="invitationCount > 0" class="badge">
+                {{ invitationCount }}
+              </span>
+            </div>
+
+            <div class="menu-container">
+              <button class="dots" @click="toggleMenu">
+                &#x22EE;
+              </button>
+            </div>
+            <div v-if="showMenu">
+              <button @click="logout">logout</button>
+            </div>
           </div>
         </div>
-        </div>       
         <form @submit.prevent="create_bubble">
-          <textarea 
-          v-model="message" 
-          label="message" 
-          placeholder="post your bubble" 
-          class="input-field" />
+          <textarea v-model="message" label="message" placeholder="post your bubble" class="input-field" />
           <div class="button-form">
-            <button :disabled="isLoading || message.length > 150" >
+            <button :disabled="isLoading || message.length > 150">
               💭post {{ 150 - message.length }} characters left💭
             </button>
-            <button @click="loadMore"  :disabled="isLoading">
-               ｡⋆*°○❀load more❀○°*⋆｡
+            <button @click="loadMore" :disabled="isLoading">
+              ｡⋆*°○❀load more❀○°*⋆｡
             </button>
           </div>
         </form>
@@ -96,22 +83,23 @@
       </div>
       <div class="block-form">
         <h1>Groups (´｡• ᵕ •｡`) </h1>
-        <button @click="createGroup()" class="modify-button">
-          create group
-        </button>
-        <div v-for="groupName in myGroups" :key="groupName.group_id">
-          <button @click="go_to_group(groupName.group_id, groupName.name)">
-            <strong>go to:</strong> 
-            {{ groupName.name }}
-          </button>
-          <button @click="modifyGroup(groupName.group_id, groupName.name)" class="button-more">
-          invite 
+        <div class="button-form-groups">
+          <div v-for="groupName in myGroups" :key="groupName.group_id" class="button-form-groups-rows">
+            <button @click="go_to_group(groupName.group_id, groupName.name)" class="button-form-groups">
+              {{ groupName.name }}
+            </button>
+            <button @click="modifyGroup(groupName.group_id, groupName.name)" class="dots-invite">
+              &#x22EE;
+            </button>
+          </div>
+          <button @click="backToPlayground()">
+            playground
+            </button>
+          <button @click="createGroup()">
+            create group
+          
           </button>
         </div>
-        <button @click="backToPlayground()">
-          playground
-        </button>
-
       </div>
 
     </div>
@@ -170,17 +158,17 @@ const blurrBackground = ref(false);
 const anyMessage = ref('');
 const isOwned = ref('');
 const guiForm = ref('');
-const handleClick=()=>{
-  if (invitationCount.value>0){
+const handleClick = () => {
+  if (invitationCount.value > 0) {
     modifyInvitation();
   }
 }
 
 function closeGui() {
-  console.log('switch of close gui',guiForm.value)
-  switch (guiForm.value){
+  console.log('switch of close gui', guiForm.value)
+  switch (guiForm.value) {
     case 'modifyGroup':
-      case 'createGroup':
+    case 'createGroup':
       get_my_groups();
       get_groups();
       break
@@ -366,8 +354,8 @@ const go_to_group = async (groupId, groupName) => {
   await get_bubbles_all();
   await get_my_groups();
   await get_groups();
-  isOwned.value = groupsNames.value.some(element=>element.group_id===groupId)
-  
+  isOwned.value = groupsNames.value.some(element => element.group_id === groupId)
+
 }
 const get_my_groups = async () => {
   console.log('getting my groups')
@@ -393,67 +381,67 @@ const get_my_groups = async () => {
 
   }
 };
-const leaveGroup = async()=>{
+const leaveGroup = async () => {
   console.log('leaving group', selectedGroupName.value);
-  const token=localStorage.getItem('token');
-  const userName=localStorage.getItem('userName');
-  const groupId=group_id.value;
-  console.log('delete groupID',groupId)
-  if (confirm('are you sure you want to leave this group?')){
-    try{
-      const response = await $fetch('/api/v1/GroupUser',{
-        baseURL:useRuntimeConfig().public.apiBaseURL,
-        method:'DELETE',
-        body:{
-          userName:userName,
-          token:token,
-          group_id:groupId
+  const token = localStorage.getItem('token');
+  const userName = localStorage.getItem('userName');
+  const groupId = group_id.value;
+  console.log('delete groupID', groupId)
+  if (confirm('are you sure you want to leave this group?')) {
+    try {
+      const response = await $fetch('/api/v1/GroupUser', {
+        baseURL: useRuntimeConfig().public.apiBaseURL,
+        method: 'DELETE',
+        body: {
+          userName: userName,
+          token: token,
+          group_id: groupId
         }
       })
       console.log(response);
-      showTempMessage(anyMessage,`(￣▽￣;)ゞ ${response.message}`,2000);
+      showTempMessage(anyMessage, `(￣▽￣;)ゞ ${response.message}`, 2000);
     }
-    catch(err){
+    catch (err) {
       console.error(err);
-      showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
+      showTempMessage(anyMessage, `(￣▽￣;)ゞ ${err.response._data.error}`, 2000);
 
     }
-    finally{
-      myGroups.value=[];
-      go_to_group(null,null);
-      
+    finally {
+      myGroups.value = [];
+      go_to_group(null, null);
+
     }
   }
 }
-const deleteGroup=async() =>{
-  console.log('delete group ',selectedGroupName.value)
-  const token=localStorage.getItem('token');
+const deleteGroup = async () => {
+  console.log('delete group ', selectedGroupName.value)
+  const token = localStorage.getItem('token');
   const userName = localStorage.getItem('userName')
-  const deleteGroupName =selectedGroupName.value 
-  if (confirm('are you sure you want to delete this group?')){
-    try{
-  const response = await $fetch('api/delete_group_id',{
-    baseURL:useRuntimeConfig().public.apiBaseURL,
-    method:'DELETE',
-    body:{
-      userName:userName,
-      token:token,
-      name:deleteGroupName
+  const deleteGroupName = selectedGroupName.value
+  if (confirm('are you sure you want to delete this group?')) {
+    try {
+      const response = await $fetch('api/delete_group_id', {
+        baseURL: useRuntimeConfig().public.apiBaseURL,
+        method: 'DELETE',
+        body: {
+          userName: userName,
+          token: token,
+          name: deleteGroupName
+        }
+      })
+      console.log(response);
+      showTempMessage(anyMessage, `(￣▽￣;)ゞ ${response.message}`, 2000);
     }
-  })
-console.log(response);
-showTempMessage(anyMessage,`(￣▽￣;)ゞ ${response.message}`,2000);
+    catch (err) {
+      console.error(err);
+      showTempMessage(anyMessage, `(￣▽￣;)ゞ ${err.response._data.error}`, 2000);
+    }
+    finally {
+      myGroups.value = [];
+      go_to_group(null, null);
+    }
   }
-  catch(err){
-    console.error(err);
-    showTempMessage(anyMessage,`(￣▽￣;)ゞ ${err.response._data.error}`,2000);
-  }
-  finally{
-    myGroups.value=[];
-    go_to_group(null,null);
-  }
-  }
-  
+
 }
 const get_groups = async () => {
   console.log('getting groups')
@@ -494,24 +482,24 @@ const getInvitations = async () => {
       baseURL: useRuntimeConfig().public.apiBaseURL,
       method: 'GET'
     })
-    if (response.length>0){
-    const formattedInvitation = response.map(element => {
-      return {
-        ...element,
-        invited: `${formatDateAgo(element.created_at)} ago`
-      }
+    if (response.length > 0) {
+      const formattedInvitation = response.map(element => {
+        return {
+          ...element,
+          invited: `${formatDateAgo(element.created_at)} ago`
+        }
 
-    })
+      })
 
-    userInvitations.value = formattedInvitation;
-    invitationCount.value = response.filter(invite=>invite.status==='pending').length
-    
-    console.log('invitations', invitationCount.value);
-  }
-  else{
-    invitationCount.value=0;
-    console.log('no pending invitations');
-  }
+      userInvitations.value = formattedInvitation;
+      invitationCount.value = response.filter(invite => invite.status === 'pending').length
+
+      console.log('invitations', invitationCount.value);
+    }
+    else {
+      invitationCount.value = 0;
+      console.log('no pending invitations');
+    }
 
 
   }
@@ -577,7 +565,7 @@ const get_bubbles_all = async () => {
       console.log('response', response)
       const allBubblesWithPosition = response.map(bubble => ({
         ...bubble,
-        left: Math.random() *60,
+        left: Math.random() * 60,
       }));
       allBubbles.value.push(...allBubblesWithPosition)
       allLastLoadedAt.value = response[response.length - 1].created_at;
@@ -623,7 +611,7 @@ const broadcast_all_users = async () => {
   )
 };
 const handleNewBubble = (newBubble) => {
-  newBubble.left = Math.random() *60;
+  newBubble.left = Math.random() * 60;
   bubbles.value.push(newBubble);
   console.log('handling new bubble: ', newBubble);
 
@@ -667,10 +655,9 @@ const getBubbleStyle = (bubble) => {
 };
 </script>
 <style>
-
-.avatar.clickable{
-cursor:pointer;
-transition:transform 0.2s;
+.avatar.clickable {
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 .avatar-wrapper {
   position: relative;
@@ -688,8 +675,6 @@ transition:transform 0.2s;
   font-weight: bold;
   transition: transform 0.2s ease-in-out;
 }
-
-
 .menu-dropdown {
   color: white;
   background-color: transparent;
@@ -707,8 +692,8 @@ transition:transform 0.2s;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  background-image:url('public/bubbles2.jpg');
-  background-size:100%;
+  background-image: url('public/bubbles2.jpg');
+  background-size: 100%;
   background-position: center;
   background-repeat: repeat;
   padding: 20px;
@@ -721,8 +706,6 @@ transition:transform 0.2s;
   filter: blur(4px);
   pointer-events: none;
 }
-
-
 .bubble-delete-logo {
   size: 10px;
   background: transparent;
@@ -792,7 +775,7 @@ transition:transform 0.2s;
   text-align: center;
   font-size: 10px;
   color: #f90b9ac9;
-  animation:drift 20s infinite ease-in-out;
+  animation: drift 20s infinite ease-in-out;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
@@ -816,6 +799,7 @@ transition:transform 0.2s;
   opacity: .1;
 }
 @keyframes drift {
+
   0%,
   100% {
     transform: translateX(0);
@@ -846,8 +830,8 @@ transition:transform 0.2s;
 }
 .bubble {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   background: radial-gradient(circle at 20% 20%,
       rgba(255, 255, 255, 0.6),
@@ -861,11 +845,11 @@ transition:transform 0.2s;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items:left;
+  align-items: left;
   text-align: center;
   font-size: 10px;
   color: #f90b9ac9;
-  animation:drift 20s infinite ease-in-out;
+  animation: drift 20s infinite ease-in-out;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
@@ -886,7 +870,6 @@ transition:transform 0.2s;
   transform: rotate(45deg);
   opacity: 0.4;
 }
-
 .menu-container {
   margin-left: 10px;
 }
@@ -898,10 +881,35 @@ transition:transform 0.2s;
 .dots:hover {
   background: transparent;
   background-color: transparent;
-  transform: scale(1.8);
+  transform: scale(1.2);
   color: white;
-  
+
 }
+.dots-invite {
+  background-color: transparent;
+  border: transparent;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.dots-invite:hover {
+  background: transparent;
+  background-color: transparent;
+  transform: scale(1.2);
+  color: white;
+  font-size: .75rem;
+
+}
+.dots-invite::after{
+  content:'invite someone';
+    transform: translateX(-50%);
+  transition: opacity 0.2s;
+  opacity: 0;
+
+}
+
+.dots-invite:hover::after{
+  opacity: 1;
+}
+
 .bubble-container {
   max-width: 1200px;
   width: 100%;
@@ -914,6 +922,7 @@ transition:transform 0.2s;
   gap: 1rem;
 
 }
+
 .bubble-container::-webkit-scrollbar {
   width: 12px;
 }
@@ -930,7 +939,8 @@ transition:transform 0.2s;
   background: rgba(186, 80, 163, 0.8);
   cursor: pointer;
 }
-.right-panel{
-  position:-webkit-sticky;
+
+.right-panel {
+  position: -webkit-sticky;
 }
 </style>
