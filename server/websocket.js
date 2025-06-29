@@ -1,8 +1,10 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
-
+import dotenv from 'dotenv';
+dotenv.config();
+const PORT= process.env.PORT_WS||3003;
 const server = http.createServer();
-const wss = new WebSocketServer({ port: 3003 });
+const wss = new WebSocketServer({ port: PORT });
 console.log('This script is executed from the pkacge.json file that I added by default')
 wss.on('connection', (ws) => {
   console.log('a client connected')
@@ -73,6 +75,7 @@ wss.on('connection', (ws) => {
 
 
 
-// server.listen(3003, () => {
-//   console.log('WebSocket server running on ws://localhost:3003');
+
+//  server.listen(PORT, () => {
+  console.log(`WebSocket server running on ${PORT}`);
 // });

@@ -1181,20 +1181,7 @@ return res.status(400).json({
 })
 }
 })
-//run the backend on port 3000
-app.listen(3000, () => {
-    console.log(`Server is running on port ${3000}`);
+const PORT =process.env.PORT||3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
-// Testing section
-// const userPayload = {
-//     userId : 'A3423',
-//     userName : 'boo1'
-// }
-// const token = generateToken(userPayload);
-// console.log('Generated token: ',token)
-// try{
-//     const decodedToken = verifyToken(token);
-//     console.log ('Decoded Payload :',decodedToken);
-// }catch (err){
-//      console.error(err.message)
-// }

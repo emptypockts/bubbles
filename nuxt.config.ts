@@ -76,7 +76,7 @@ plugins:[{
   runtimeConfig: {
     public: {
       // dev
-      // apiBaseURL: 'http://localhost:3000'
+      // apiBaseURL: 'http://raspberrypi:3004'
       //prod 
       apiBaseURL: 'https://backend.dahoncho.com'
     },
