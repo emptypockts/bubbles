@@ -7,6 +7,7 @@ import { open } from 'sqlite';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { CloudAdapter, ConfigurationServiceClientCredentialFactory, TurnContext } from 'botbuilder';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
@@ -15,6 +16,15 @@ const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'h
 //     origin: 'http://localhost:3001', // Nuxt's dev server port
 //     credentials: true,
 //   }));
+const MicrosoftAppId = process.env.BUBBLE_APP_ID
+const MicrosoftAppSecret = process.env.BUBBLE_BOT_SECRET
+const TenantId = process.env.TENANT_ID
+const credentials = new ConfigurationServiceClientCredentialFactory({
+    MicrosoftAppId,
+    MicrosoftAppPassword: MicrosoftAppSecret
+});
+const adapter = new CloudAdapter(credentials)
+
 const corsOptions = {
     origin: function (origin, callback) {
         if (allowedOrigins.includes(origin) || !origin) {
@@ -59,6 +69,11 @@ const verifyToken = (token) => {
         console.error('Token verification error:', err); // Log the error for more details
     }
 };
+//get bot messages from teams
+app.post('/api/v1/bubble', async (req, res) => {
+
+})
+
 // Inster User API
 app.post('/api/insert_user', async (req, res) => {
     const { userName, avatar, email, name, password } = req.body;
@@ -494,59 +509,59 @@ app.put('/api/add_users', async (req, res) => {
 
 })
 //api leave groups
-app.delete('/api/v1/GroupUser',async (req,res)=>{
-    const {userName,token,group_id}=req.body;
-    if(!userName||!token||!group_id){
+app.delete('/api/v1/GroupUser', async (req, res) => {
+    const { userName, token, group_id } = req.body;
+    if (!userName || !token || !group_id) {
         console.error('missing fields');
         return res.status(400).json({
-            error:'missing fields'
+            error: 'missing fields'
         })
     }
     console.log('token is valid');
     const db = await open({
-        filename:dbPath,
-        driver:sqlite3.Database
+        filename: dbPath,
+        driver: sqlite3.Database
     })
     await db.run('PRAGMA foreign_keys=ON');
-    const isMyGroupQuery=`SELECT * FROM groups WHERE username=? AND group_id=?
+    const isMyGroupQuery = `SELECT * FROM groups WHERE username=? AND group_id=?
     `;
-    try{
-        const isOwnerResponse=await db.all(isMyGroupQuery,[userName,group_id])
-        console.log('isOwner',isOwnerResponse)
-        if (isOwnerResponse.length>0){
+    try {
+        const isOwnerResponse = await db.all(isMyGroupQuery, [userName, group_id])
+        console.log('isOwner', isOwnerResponse)
+        if (isOwnerResponse.length > 0) {
             console.error('you cannot leave your own group');
             return res.status(403).json({
-                error:'cannot leave your own group'
+                error: 'cannot leave your own group'
             })
         }
     }
-    catch (err){
+    catch (err) {
         console.error(err)
         return res.status(500).json({
-            error:'error querying db'
+            error: 'error querying db'
         })
     }
-    try{
-        console.log('deleting from user_groups username',userName)
-        const deleteUserFromGroupQ=`DELETE FROM user_groups WHERE username=? AND group_id=?
+    try {
+        console.log('deleting from user_groups username', userName)
+        const deleteUserFromGroupQ = `DELETE FROM user_groups WHERE username=? AND group_id=?
         `;
-        console.log('deleting from user_groups username',group_id)
-        const deleteBubblesFromGroup=`DELETE FROM bubbles WHERE username=? AND group_id=? 
+        console.log('deleting from user_groups username', group_id)
+        const deleteBubblesFromGroup = `DELETE FROM bubbles WHERE username=? AND group_id=? 
         `;
         await db.run('BEGIN TRANSACTION');
-        await db.run(deleteUserFromGroupQ,[userName,group_id]);
-        await db.run(deleteBubblesFromGroup,[userName,group_id]);
+        await db.run(deleteUserFromGroupQ, [userName, group_id]);
+        await db.run(deleteBubblesFromGroup, [userName, group_id]);
         const response = await db.run('COMMIT');
-        console.log('transaction completed',response);
+        console.log('transaction completed', response);
         return res.status(200).json({
-            message:'transaction completed'
+            message: 'transaction completed'
         });
     }
-    catch(err){
+    catch (err) {
         await db.run('ROLLBACK');
         console.error('error during leaving group transaction');
         return res.status(500).json({
-            error:'error leaving group'
+            error: 'error leaving group'
         })
     }
 })
@@ -859,9 +874,9 @@ app.post('/api/v1/invitations', async (req, res) => {
         }
         const allowedInviteQuery = `SELECT * FROM groups WHERE username=? AND group_id=?
         `;
-        
-            const groupExist = await db.get(allowedInviteQuery, [userName, group_id])
-        
+
+        const groupExist = await db.get(allowedInviteQuery, [userName, group_id])
+
         if (groupExist) {
             const query = ` INSERT INTO invitations (group_id,invited_by,invited_user)
         VALUES (?,?,?)
@@ -894,10 +909,10 @@ app.post('/api/v1/invitations', async (req, res) => {
                 })
             }
         }
-        else{
+        else {
             console.log('you do not own this group');
             return res.status(403).json({
-                error:'you do not own this group'
+                error: 'you do not own this group'
             })
         }
 
@@ -912,7 +927,7 @@ app.post('/api/v1/invitations', async (req, res) => {
 })
 // get invitation
 app.get('/api/v1/invitations', async (req, res) => {
-    const { userName, token,group_id } = req.query;
+    const { userName, token, group_id } = req.query;
     if (!userName || !token) {
         console.error('missing fields');
         return res.status(400).json({
@@ -926,50 +941,50 @@ app.get('/api/v1/invitations', async (req, res) => {
             filename: dbPath,
             driver: sqlite3.Database
         })
-        if (!group_id){
-        const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at, invitations.invited_by,invitations.group_id,invitations.invitation_id
+        if (!group_id) {
+            const query = `SELECT groups.name, groups.username, invitations.status, invitations.created_at, invitations.invited_by,invitations.group_id,invitations.invitation_id
         FROM invitations
         JOIN groups ON  invitations.group_id=groups.group_id
         WHERE invitations.invited_user=? AND invitations.status=?
         ORDER by invitations.created_at DESC
         `;
-        try {
-            const invitations = await db.all(query, [userName,'pending'])
-            if (invitations.length > 0) {
-                return res.status(200).json(
-                    invitations
-                )
+            try {
+                const invitations = await db.all(query, [userName, 'pending'])
+                if (invitations.length > 0) {
+                    return res.status(200).json(
+                        invitations
+                    )
+                }
+                else {
+                    console.log('you have no pending invitations')
+                    return res.status(200).json({
+                        invitations
+                    })
+                }
             }
-            else {
-                console.log('you have no pending invitations')
-                return res.status(200).json({
-                    invitations
+            catch (err) {
+                console.error(err);
+                return res.status(500).json({
+                    error: err
                 })
             }
         }
-        catch (err) {
-            console.error(err);
-            return res.status(500).json({
-                error: err
-            })
-        }
-    }
-    else{
-        const queryAllPending = `SELECT * FROM invitations where group_id=? AND status=?
+        else {
+            const queryAllPending = `SELECT * FROM invitations where group_id=? AND status=?
         `;
-        const pendingList = await db.all(queryAllPending,[group_id,'pending']);
-        if (pendingList.length>0){
-            return res.status(200).json(
-                pendingList
-            )
+            const pendingList = await db.all(queryAllPending, [group_id, 'pending']);
+            if (pendingList.length > 0) {
+                return res.status(200).json(
+                    pendingList
+                )
+            }
+            else {
+                console.error('no pending invitations for this group');
+                return res.status(200).json({
+                    message: 'no pending invitations'
+                })
+            }
         }
-        else{
-            console.error('no pending invitations for this group');
-            return res.status(200).json({
-                message:'no pending invitations'
-            })
-        }
-    }
     }
     else {
         console.error('invalid token');
@@ -1157,31 +1172,46 @@ app.post('/api/v1/gemini', async (req, res) => {
             error: 'missing query'
         });
     }
-    try{
+    try {
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
-    const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
-        generationConfig: {
-            temperature: 0.9,
-            topP: 0.9
-        }
-    });
-    console.log(query)
-    const result = await model.generateContent(query);
-    const post = result.response.text()
-    return res.status(200).json({
-        post: post
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            generationConfig: {
+                temperature: 0.9,
+                topP: 0.9
+            }
+        });
+        console.log(query)
+        const result = await model.generateContent(query);
+        const post = result.response.text()
+        return res.status(200).json({
+            post: post
+        })
+    }
+    catch (error) {
+        console.error('bad request');
+        return res.status(400).json({
+            error: 'bad request'
+        })
+    }
+})
+
+// api to fetch teams responses
+app.post('/api/v1/bubble', async(req,res)=>{
+    console.log('you called the api!')
+    await adapter.process(req,res,async(context)=>{
+      if (context.activity.type==='message'){
+        const ref = TurnContext.getConversationReference(context.activity);
+        const userId = context.activity.from.id;
+        await context.sendActivity(`hi there ${context.activity.text}`)
+        
+      }  
     })
-}
-catch (error){
-console.error('bad request');
-return res.status(400).json({
-    error:'bad request'
+
 })
-}
-})
-const PORT =process.env.PORT||3000;
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
