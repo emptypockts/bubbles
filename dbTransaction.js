@@ -69,10 +69,6 @@ const verifyToken = (token) => {
         console.error('Token verification error:', err); // Log the error for more details
     }
 };
-//get bot messages from teams
-app.post('/api/v1/bubble', async (req, res) => {
-
-})
 
 // Inster User API
 app.post('/api/insert_user', async (req, res) => {
@@ -1165,7 +1161,6 @@ DELETE FROM bubbles WHERE bubble_id=? AND username =?
 //connect ai
 app.post('/api/v1/gemini', async (req, res) => {
     const { query } = req.body;
-    const params = [query]
     if (!query) {
         console.log('query to ai: ', query)
         return res.status(400).json({
@@ -1198,20 +1193,37 @@ app.post('/api/v1/gemini', async (req, res) => {
 })
 
 // api to fetch teams responses
-app.post('/api/v1/bubble', async(req,res)=>{
-    console.log('you called the api!')
+app.post('/api/v1/bubble', async (req, res) => {
+    const query  = req.body;
+    console.log(query)
+    if (!query) {
+        console.error('missing parameters')
+        return res.status(400).json({
+            error: 'missing parameters'
+        });
+    }
+    try{
     await adapter.process(req,res,async(context)=>{
       if (context.activity.type==='message'){
         const ref = TurnContext.getConversationReference(context.activity);
         const userId = context.activity.from.id;
         await context.sendActivity(`hi there ${context.activity.text}`)
-        
+
       }  
     })
+}
+    
+    catch (err){
+        console.log(err)
+        return res.status(500).json({
+            error:'server error'
+        })
+    }
 
 })
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+    console.log('hi hello')
     console.log(`Server is running on port ${PORT}`);
 });
