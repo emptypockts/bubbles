@@ -8,6 +8,7 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CloudAdapter, ConfigurationServiceClientCredentialFactory, TurnContext } from 'botbuilder';
+import { ConfigurationBotFrameworkAuthentication } from 'botbuilder';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
@@ -19,9 +20,11 @@ const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'h
 const MicrosoftAppId = process.env.BUBBLE_APP_ID
 const MicrosoftAppSecret = process.env.BUBBLE_BOT_SECRET
 const TenantId = process.env.TENANT_ID
-const credentials = new ConfigurationServiceClientCredentialFactory({
-    MicrosoftAppId,
-    MicrosoftAppPassword: MicrosoftAppSecret
+const credentials = new ConfigurationBotFrameworkAuthentication({
+    MicrosoftAppId:MicrosoftAppId,
+    MicrosoftAppPassword:MicrosoftAppSecret,
+    MicrosoftAppTenantId:TenantId,
+    MicrosoftAppType:'MultiTenant'
 });
 const adapter = new CloudAdapter(credentials)
 
@@ -1203,17 +1206,18 @@ app.post('/api/v1/bubble', async (req, res) => {
         });
     }
     try{
+        
     await adapter.process(req,res,async(context)=>{
-      if (context.activity.type==='message'){
+        console.log(context)
         const ref = TurnContext.getConversationReference(context.activity);
         const userId = context.activity.from.id;
         await context.sendActivity(`hi there ${context.activity.text}`)
-
-      }  
+ 
     })
 }
     
     catch (err){
+        console.log(adapter)
         console.log(err)
         return res.status(500).json({
             error:'server error'

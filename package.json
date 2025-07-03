@@ -20,6 +20,7 @@
     "@pinia/nuxt": "^0.11.0",
     "bcrypt": "^5.1.1",
     "botbuilder": "^4.17.0-blobs1",
+    "botbuilder-core": "^4.23.2",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
