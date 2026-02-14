@@ -41,7 +41,7 @@
 
     </div>
 
-    <div class="right panel">
+    <div class="right-panel">
 
       <div class="block-form">
         <div class="avatar-title">
@@ -911,15 +911,8 @@ const getBubbleStyle = (bubble) => {
 }
 
 .bubble-container {
-  max-width: 1200px;
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: left;
-  margin: 0 auto;
-  padding: 1rem;
-  gap: 1rem;
+  flex:1 1 auto;
+  min-width: 0;
 
 }
 
@@ -941,6 +934,10 @@ const getBubbleStyle = (bubble) => {
 }
 
 .right-panel {
-  position: -webkit-sticky;
+  position: sticky;
+  height: fit-content;
+  top:20px;
+  align-self: flex-start;
+   flex: 0 0 320px; 
 }
 </style>

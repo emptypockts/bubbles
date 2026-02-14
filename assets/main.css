@@ -130,18 +130,18 @@ button:disabled {
   cursor: not-allowed;
 }
 .block-form {
-    max-height: 30vh;
-    position: flex;
+    max-height: 25vh;
+    overflow-y: auto;
   width: 400px;
+  
   background: rgba(233, 163, 248, 0.397);
   backdrop-filter: blur(10px);
   padding: 10px;
   color: white;
   height: 300px;
   z-index: 999;
-  overflow-y: auto;
   display:flexbox;
-  flex-direction: column;
+  
   margin-bottom: 20px;
   align-content: center;
 }
@@ -149,7 +149,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap:5px;
-  width:20vh;
+  width:150px;
 
 }
 .button-form-groups-rows {

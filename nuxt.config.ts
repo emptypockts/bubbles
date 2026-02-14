@@ -21,7 +21,7 @@ nitro:{
   routeRules:{
     '/_nuxt/**':{
       headers:{
-        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'Cache-Control': 'public, max-age=10, must-revalidate',
       }
     }
   },
@@ -70,7 +70,7 @@ plugins:[{
       // dev
       // apiBaseURL: 'http://raspberrypi:3004'
       //prod 
-      apiBaseURL: 'https://backend.eacsa.us'
+      apiBaseURL: process.env.API_BASE_URL||'https://backend.eacsa.us'
     },
   },
 

@@ -27,8 +27,6 @@ const credentials = new ConfigurationBotFrameworkAuthentication({
     MicrosoftAppType:'MultiTenant'
 });
 const adapter = new CloudAdapter(credentials)
-
-
 const corsOptions = {
     origin: function (origin, callback) {
         if (allowedOrigins.includes(origin) || !origin) {
@@ -1165,33 +1163,73 @@ DELETE FROM bubbles WHERE bubble_id=? AND username =?
 //connect ai
 app.post('/api/v1/gemini', async (req, res) => {
     const { query } = req.body;
-    if (!query) {
-        console.log('query to ai: ', query)
+    if (!query ||!query.message || !query.type) {
         return res.status(400).json({
             error: 'missing query'
         });
+    }
+    let agent=''
+    if (query.type==='laqueso'){
+    agent = `
+    Eres una escritora profesional que invento el mundo de gumball y gravity falls
+    Genera UN post de Instagram con esta estructura exacta:
+
+    Línea 1: Gancho corto y llamativo.
+    Línea 2: Chiste principal.
+    Línea 3: Un solo emoji.
+
+    Reglas:
+    - Máximo 150 caracteres incluyendo espacios y emoji.
+    - No agregues hashtags.
+    - No agregues explicación.
+    - No agregues texto adicional.`
+    }
+    else if (query.type==='witty'){
+    agent =`
+    You are a professional comedy writer for that invented gravity falls and the amazing world of gumball
+    
+
+    Write ONE Instagram post using the exact structure:
+
+    Line 1: short catchy hook
+    Line 2: main joke
+    Line 3: one emoji
+
+    Rules:
+    - All lowercase.
+    - Witty Gen Alpha vibe.
+    - Maximum 150 characters including spaces and emoji.
+    - No hashtags.
+    - No extra text.`
+    }
+    else {
+        return res.status(400).json({
+            error:'invalid type'
+        })
     }
     try {
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
+            systemInstruction:agent,
             generationConfig: {
                 temperature: 0.9,
                 topP: 0.9
+
             }
         });
-        console.log(query)
-        const result = await model.generateContent(query);
+        const result = await model.generateContent(query.message);
         const post = result.response.text()
         return res.status(200).json({
-            post: post
+            post
         })
     }
     catch (error) {
-        console.error('bad request');
+        console.error('error is',error);
         return res.status(400).json({
-            error: 'bad request'
+            error: 'bad request',
+            message:error
         })
     }
 })
@@ -1229,6 +1267,5 @@ app.post('/api/v1/bubble', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log('hi hello')
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`api server is running on port ${PORT}`);
 });
