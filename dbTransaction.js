@@ -7,12 +7,12 @@ import { open } from 'sqlite';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { CloudAdapter, ConfigurationServiceClientCredentialFactory, TurnContext } from 'botbuilder';
+import { CloudAdapter, TurnContext } from 'botbuilder';
 import { ConfigurationBotFrameworkAuthentication } from 'botbuilder';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
-const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'https://bubbles.dahoncho.com']
+const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'https://bubbles.eacsa.us']
 // app.use(cors({
 //     origin: 'http://localhost:3001', // Nuxt's dev server port
 //     credentials: true,
@@ -27,6 +27,7 @@ const credentials = new ConfigurationBotFrameworkAuthentication({
     MicrosoftAppType:'MultiTenant'
 });
 const adapter = new CloudAdapter(credentials)
+
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -1209,9 +1210,9 @@ app.post('/api/v1/bubble', async (req, res) => {
         
     await adapter.process(req,res,async(context)=>{
         console.log(context)
+        await context.sendActivity(`hi there ${context.activity.text}`)
         const ref = TurnContext.getConversationReference(context.activity);
         const userId = context.activity.from.id;
-        await context.sendActivity(`hi there ${context.activity.text}`)
  
     })
 }

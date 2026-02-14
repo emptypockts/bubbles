@@ -49,16 +49,8 @@ plugins:[{
         usePolling:true,
         interval:1000,
       },
-      allowedHosts:['bubbles.dahoncho.com'],
-      // hmr:{
-      //   // prod
-      //   protocol: "https",
-      //   host: 'bubbles.dahoncho.com',
-        
-      //   // dev
-      //   // clientPort: 3000,
-      //   // port: 3000,
-      // },
+      allowedHosts:['bubbles.eacsa.us'],
+      
       proxy:{
         '/ws': { 
           target: 'ws://localhost:3003', 
@@ -78,7 +70,7 @@ plugins:[{
       // dev
       // apiBaseURL: 'http://raspberrypi:3004'
       //prod 
-      apiBaseURL: 'https://backend.dahoncho.com'
+      apiBaseURL: 'https://backend.eacsa.us'
     },
   },
 

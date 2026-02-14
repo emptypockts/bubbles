@@ -129,7 +129,7 @@ import ai from './ai.vue';
 import groupCenter from './groupCenter.vue';
 import createGroupCenter from './createGroupCenter.vue';
 import invitationCenter from './invitationCenter.vue';
-const webSocketUrl = 'wss://wss.dahoncho.com';
+const webSocketUrl = 'wss://wss.eacsa.us';
 const isConnected = ref(false);
 const { $websocket } = useNuxtApp();
 const route = useRouter();
