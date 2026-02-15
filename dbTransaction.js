@@ -13,10 +13,20 @@ dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
 const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'https://bubbles.eacsa.us','https://backend.eacsa.us']
-// app.use(cors({
-//     origin: 'http://localhost:3001', // Nuxt's dev server port
-//     credentials: true,
-//   }));
+app.use(cors({
+  origin: function (origin, callback) {
+
+    // Allow non-browser requests (like curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 const MicrosoftAppId = process.env.BUBBLE_APP_ID
 const MicrosoftAppSecret = process.env.BUBBLE_BOT_SECRET
 const TenantId = process.env.TENANT_ID
