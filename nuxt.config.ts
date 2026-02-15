@@ -66,12 +66,7 @@ plugins:[{
   },
   compatibilityDate: '2024-11-01',
   runtimeConfig: {
-    public: {
-      // dev
-      // apiBaseURL: 'http://raspberrypi:3004'
-      //prod 
-      apiBaseURL: process.env.API_BASE_URL||'https://backend.eacsa.us'
-    },
+    public: {},
   },
 
 });

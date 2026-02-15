@@ -54,7 +54,6 @@ const handleLogin= async()=>{
     anyMessage.value='';
     try{
         const response = await $fetch('/api/login_user',{
-            baseURL:useRuntimeConfig().public.apiBaseURL,
             method:'POST',
             body:{
                 userName:userName.value,

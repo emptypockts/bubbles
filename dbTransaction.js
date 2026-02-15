@@ -12,7 +12,7 @@ import { ConfigurationBotFrameworkAuthentication } from 'botbuilder';
 dotenv.config();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY
-const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'https://bubbles.eacsa.us']
+const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'https://bubbles.eacsa.us','https://backend.eacsa.us']
 // app.use(cors({
 //     origin: 'http://localhost:3001', // Nuxt's dev server port
 //     credentials: true,

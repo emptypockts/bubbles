@@ -240,7 +240,6 @@ const create_bubble = async () => {
   if (play.value) {
     try {
       const response = await $fetch('api/create_bubble', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'POST',
         body: {
           userName: userName.value,
@@ -390,7 +389,6 @@ const leaveGroup = async () => {
   if (confirm('are you sure you want to leave this group?')) {
     try {
       const response = await $fetch('/api/v1/GroupUser', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'DELETE',
         body: {
           userName: userName,
@@ -421,7 +419,6 @@ const deleteGroup = async () => {
   if (confirm('are you sure you want to delete this group?')) {
     try {
       const response = await $fetch('api/delete_group_id', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'DELETE',
         body: {
           userName: userName,
@@ -592,7 +589,6 @@ const get_other_avatars = async (userName) => {
   if (!avatars.value[userName]) {
     try {
       const response = await $fetch(`/api/other_avatar?userName=${userName}`, {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'GET'
       })
       avatars.value[userName] = response.avatar;

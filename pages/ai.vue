@@ -41,7 +41,6 @@ async function witty() {
     try {
 
       const response = await $fetch('/api/v1/gemini', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'POST',
         body: {
           query:{
@@ -74,7 +73,6 @@ async function joke() {
     try {
 
       const response = await $fetch('/api/v1/gemini', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'POST',
         body: {
           query:{

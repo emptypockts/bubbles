@@ -46,8 +46,7 @@ const createGroup = async () => {
 
     try {
         const response = await $fetch(`/api/get_my_groups?${params.toString()}`, {
-            baseURL: useRuntimeConfig().public.apiBaseURL,
-            method: 'GET',
+                method: 'GET',
             throwHttpErrors: true
         })
         const groupFilter = response.filter(element => element.name === groupName.value)
@@ -63,8 +62,7 @@ const createGroup = async () => {
             isLoading.value = false;
             try {
                 const response = await $fetch('/api/create_group_id', {
-                    baseURL: useRuntimeConfig().public.apiBaseURL,
-                    method: 'POST',
+                                method: 'POST',
                     body: {
                         userName: props.userName,
                         token: token,

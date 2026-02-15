@@ -48,7 +48,6 @@ const respondInvite = async (group, isAccepted) => {
   if (invitationStatus.value) {
       const response = await $fetch('/api/v1/invitations', {
 
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'PATCH',
         body: {
           token: token,
@@ -67,7 +66,6 @@ const respondInvite = async (group, isAccepted) => {
     
       const response = await $fetch('/api/v1/invitations', {
 
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'PATCH',
         body: {
           token: token,
