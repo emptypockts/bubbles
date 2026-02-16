@@ -1,0 +1,125 @@
+services:
+  # ============================================
+  # Nuxt Frontend (Port 3001)
+  # ============================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: bubbles-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - bubbles-db:/app/data
+    depends_on:
+      api:
+        condition: service_healthy
+      websocket:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    networks:
+      - bubbles-network
+    labels:
+      - "com.example.description=Bubbles Nuxt Frontend"
+
+  # ============================================
+  # Express API Backend (Port 3000)
+  # ============================================
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.api
+    container_name: bubbles-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_PATH=/app/data/bubbles.db
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - LOG_LEVEL=info
+    volumes:
+      - bubbles-db:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 384M
+        reservations:
+          cpus: '0.4'
+          memory: 192M
+    networks:
+      - bubbles-network
+    labels:
+      - "com.example.description=Bubbles Express API (dbTransaction.js)"
+
+  # ============================================
+  # WebSocket Server (Port 3003)
+  # ============================================
+  websocket:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.ws
+    container_name: bubbles-websocket
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DB_PATH=/app/data/bubbles.db
+    volumes:
+      - bubbles-db:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "3003"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 256M
+        reservations:
+          cpus: '0.4'
+          memory: 128M
+    networks:
+      - bubbles-network
+    labels:
+      - "com.example.description=Bubbles WebSocket Server"
+
+# ============================================
+# Volumes for persistent data
+# ============================================
+volumes:
+  bubbles-db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/docker-storage/bubbles/data
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  bubbles-network:
+    driver: bridge
+

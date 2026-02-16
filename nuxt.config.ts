@@ -49,7 +49,6 @@ plugins:[{
         usePolling:true,
         interval:1000,
       },
-      allowedHosts:['bubbles.eacsa.us'],
       
       proxy:{
         '/ws': { 
@@ -66,7 +65,10 @@ plugins:[{
   },
   compatibilityDate: '2024-11-01',
   runtimeConfig: {
-    public: {},
+    public:{
+		apiBase: process.env.API_BASE_URL || 'http://localhost:3000',
+      		wsUrl: process.env.WS_URL || 'ws://localhost:3003',
+    },
   },
 
 });

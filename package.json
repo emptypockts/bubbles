@@ -7,7 +7,6 @@
     "dev": "nuxt dev --port 3001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
     "start:ws": "node server/websocket.js",
     "start": "nuxt start"
   },

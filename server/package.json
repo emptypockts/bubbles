@@ -1,0 +1,23 @@
+{
+  "name": "bubbles-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start:api": "node dbTransaction.js",
+    "start:ws": "node websocket.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "bcrypt": "^5.1.1",
+    "botbuilder": "^4.17.0-blobs1",
+    "botbuilder-core": "^4.23.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "ws": "^8.18.0"
+  }
+}

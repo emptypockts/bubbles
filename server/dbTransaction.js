@@ -52,8 +52,8 @@ app.use((req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     next();
 });
-const db = new sqlite3.Database('bubbles.db')
-const dbPath = process.env.DB_PATH
+const dbPath = process.env.DB_PATH||'/app/data/bubbles.db'
+const db = new sqlite3.Database(dbPath)
 const hashPassword = async (password) => {
     const saltRounds = 10;
     try {
@@ -1274,7 +1274,9 @@ app.post('/api/v1/bubble', async (req, res) => {
     }
 
 })
-
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date() });
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`api server is running on port ${PORT}`);
