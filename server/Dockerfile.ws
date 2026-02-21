@@ -1,25 +1,20 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache dumb-init
-
-COPY package*.json ./
-
-RUN npm ci --omit=dev && npm cache clean --force
+COPY package.json package-lock.json ./
+RUN npm install
 
 COPY . .
+# Create a non-root user and group
+# 'addgroup -S appgroup' creates a system group
+# 'adduser -S -G appgroup appuser' creates a system user 'appuser' and adds it to 'appgroup'
+RUN addgroup -S appgroup && adduser -S -G appgroup appuser
+RUN chown -R appuser:appgroup /app
+USER appuser
 
-RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
-USER nodejs
 
 EXPOSE 3003
-
-# Simple TCP check instead of HTTP
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD nc -z localhost 3003 || exit 1
-
-ENTRYPOINT ["dumb-init", "--"]
 
 CMD ["node", "websocket.js"]
 

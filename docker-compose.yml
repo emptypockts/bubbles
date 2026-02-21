@@ -1,125 +1,102 @@
+version: '3.8' # Use a recent version for Swarm features
+
 services:
-  # ============================================
-  # Nuxt Frontend (Port 3001)
-  # ============================================
+  # Nuxt.js Frontend Service
   frontend:
     build:
-      context: .
+      context: . # Path to your Nuxt.js app directory containing the Dockerfile
       dockerfile: Dockerfile.frontend
-    container_name: bubbles-frontend
+    image: bubbles-frontend:latest # Name and tag for your Docker image
     ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=production
-      - PORT=3001
-    volumes:
-      - bubbles-db:/app/data
-    depends_on:
-      api:
-        condition: service_healthy
-      websocket:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 30s
+      - "3001:3001" # Expose frontend to host port 3001 for Cloudflared tunnel
     networks:
       - bubbles-network
-    labels:
-      - "com.example.description=Bubbles Nuxt Frontend"
+    deploy:
+      replicas: 1 # You might want more for high availability
+      restart_policy:
+        condition: on-failure
+    environment:
+      # These environment variables are for the Nuxt.js app itself
+      # They must reflect how your application *accesses* its backend services
+      # through the Cloudflare tunnel.
+      #
+      # For API: The frontend will make calls to `/api` relative to its own origin.
+      # Cloudflare will then route bubbles.eacsa.us/api to localhost:3000
+      # So, Nuxt's API_BASE_URL (which it prefixes to requests) needs to be its own origin.
+      # The devProxy handles this correctly during development but for production build,
+      # if it makes full qualified calls, it needs to know the base.
+      # Given your Cloudflare rule, the Nuxt frontend's API calls should be relative.
+      # If your Nuxt code uses `useFetch('/api/some-endpoint')`, it correctly goes to its own origin.
+      #
+      # NUXT_PUBLIC_API_BASE should ideally be the public URL for API calls.
+      # Since Cloudflare routes `/api` path on `bubbles.eacsa.us`, we'll set it as such.
+      NUXT_PUBLIC_API_BASE: /api
+      NUXT_PUBLIC_WS_URL: /ws
+      NUXT_PUBLIC_EXTERNAL_API_BASE: https://bubbles.eacsa.us/api
+      NUXT_PUBLIC_EXTERNAL_WS_URL: wss://wss.eacsa.us
+      PORT: 3001
 
-  # ============================================
-  # Express API Backend (Port 3000)
-  # ============================================
+  # Backend API Service
   api:
     build:
-      context: ./server
+      context: ./server # Path to your backend API directory
       dockerfile: Dockerfile.api
-    container_name: bubbles-api
+    image: bubbles-api:latest
+    # No need to expose port 3000 to the host if only Cloudflared ingress and internal services access it.
+    # Cloudflared will access it via 'localhost:3000' on the host, which is then mapped to the container.
+    # Or, if you use a separate Cloudflared tunnel *inside* the swarm, you'd publish it to the overlay network.
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - DB_PATH=/app/data/bubbles.db
-      - SECRET_KEY=${SECRET_KEY:-your-secret-key}
-      - LOG_LEVEL=info
-    volumes:
-      - bubbles-db:/app/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.8'
-          memory: 384M
-        reservations:
-          cpus: '0.4'
-          memory: 192M
+      - "3000:3000" # Keeping this for direct host access by Cloudflared tunnel or for debugging
     networks:
       - bubbles-network
-    labels:
-      - "com.example.description=Bubbles Express API (dbTransaction.js)"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    volumes:
+      # Mount the host path /mnt/docker-storage/bubbles/data to /app/data inside the container
+      - bubbles-db:/app/data
+    environment:
+      # Database path inside the container
+      DB_PATH: /app/data/bubbles.db # This should point to the actual DB file within the mounted volume
+      SECRET_KEY: ${SECRET_KEY} # Pull from host environment
+      GEMINI_API: ${GEMINI_API} # Pull from host environment
+      PORT: 3000
 
-  # ============================================
-  # WebSocket Server (Port 3003)
-  # ============================================
-  websocket:
+  # WebSocket Service
+  websocket-service:
     build:
-      context: ./server
+      context: ./server # Path to your WebSocket service directory
       dockerfile: Dockerfile.ws
-    container_name: bubbles-websocket
+    image: bubbles-websocket:latest
+    # No need to expose port 3003 to the host if only Cloudflared ingress and internal services access it.
     ports:
-      - "3003:3003"
-    environment:
-      - NODE_ENV=production
-      - PORT=3003
-      - DB_PATH=/app/data/bubbles.db
-    volumes:
-      - bubbles-db:/app/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "3003"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.8'
-          memory: 256M
-        reservations:
-          cpus: '0.4'
-          memory: 128M
+      - "3003:3003" # Keeping this for direct host access by Cloudflared tunnel or for debugging
     networks:
       - bubbles-network
-    labels:
-      - "com.example.description=Bubbles WebSocket Server"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      PORT_WS: 3003
 
-# ============================================
-# Volumes for persistent data
-# ============================================
+networks:
+  bubbles-network:
+    driver: overlay # Required for Swarm to allow services on different nodes to communicate
+
+# No need to define a named volume if you're directly mounting a host path
+# However, if you want Docker to manage the volume and place it on /mnt/docker-storage/bubbles/data,
+# you could define a named volume with 'driver_opts' for local-persist:
+#
 volumes:
   bubbles-db:
     driver: local
     driver_opts:
-      type: none
-      o: bind
-      device: /mnt/docker-storage/bubbles/data
-
-# ============================================
-# Networks
-# ============================================
-networks:
-  bubbles-network:
-    driver: bridge
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/docker-storage/bubbles/data'
+#
+# And then use `volumes: - bubbles-db:/app/data` in the backend-api service.
+# For simplicity and direct host path control, the direct bind mount is often easier.
 

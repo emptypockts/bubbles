@@ -1,24 +1,27 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache dumb-init
-
-COPY package*.json ./
-
-RUN npm ci --ignore-scripts && npm cache clean --force
+COPY package.json package-lock.json ./
+RUN npm install
 
 COPY . .
 
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
-USER nodejs
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S -G appgroup appuser
+
+# For the API, if it writes to a specific directory (like your DB_PATH),
+# ensure that directory is owned by the appuser or has write permissions.
+# Assuming /app/data is where bubbles.db will reside
+RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+ENV DB_PATH=/app/data/bubbles.db
+
 
 EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
-
-ENTRYPOINT ["dumb-init", "--"]
 
 CMD ["node", "dbTransaction.js"]
 

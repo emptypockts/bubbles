@@ -45,6 +45,7 @@ plugins:[{
   vite:{
 
     server:{
+	    port:3001,
       watch:{
         usePolling:true,
         interval:1000,
@@ -64,11 +65,16 @@ plugins:[{
     }
   },
   compatibilityDate: '2024-11-01',
-  runtimeConfig: {
-    public:{
-		apiBase: process.env.API_BASE_URL || 'http://localhost:3000',
-      		wsUrl: process.env.WS_URL || 'ws://localhost:3003',
+    runtimeConfig: {
+    public: {
+      // These are default values for client-side (browser) and fallback
+      apiBase: process.env.NUXT_PUBLIC_EXTERNAL_API_BASE || 'https://bubbles.eacsa.us/api',
+      wsUrl: process.env.NUXT_PUBLIC_EXTERNAL_WS_URL || 'wss://wss.eacsa.us',
     },
+    // Server-side only variables (not exposed to client).
+    // These will be overridden by environment variables in Docker.
+    serverApiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000/api', // Default for SSR in dev, but Docker env will override
+    serverWsUrl: process.env.NUXT_PUBLIC_WS_URL || 'ws://localhost:3003',   // Default for SSR in dev, but Docker env will override
   },
 
 });

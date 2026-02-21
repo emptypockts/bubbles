@@ -88,4 +88,3 @@ echo "  sudo systemctl start bubbles_nuxt.service"
 echo "  sudo systemctl start bubbles_backend.service"
 echo "  sudo systemctl start bubbles_ws.service"
 echo ""
-
