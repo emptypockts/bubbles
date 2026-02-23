@@ -8,7 +8,10 @@ services:
       dockerfile: Dockerfile.frontend
     image: bubbles-frontend:latest # Name and tag for your Docker image
     ports:
-      - "3001:3001" # Expose frontend to host port 3001 for Cloudflared tunnel
+      - target: 3001 # Expose frontend to host port 3001 for Cloudflared tunnel
+        published: 3001
+        protocol: tcp
+        mode: host
     networks:
       - bubbles-network
     deploy:
@@ -46,7 +49,11 @@ services:
     # Cloudflared will access it via 'localhost:3000' on the host, which is then mapped to the container.
     # Or, if you use a separate Cloudflared tunnel *inside* the swarm, you'd publish it to the overlay network.
     ports:
-      - "3000:3000" # Keeping this for direct host access by Cloudflared tunnel or for debugging
+      # Keeping this for direct host access by Cloudflared tunnel or for debugging
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: host
     networks:
       - bubbles-network
     deploy:
@@ -71,7 +78,10 @@ services:
     image: bubbles-websocket:latest
     # No need to expose port 3003 to the host if only Cloudflared ingress and internal services access it.
     ports:
-      - "3003:3003" # Keeping this for direct host access by Cloudflared tunnel or for debugging
+      - target: 3003                                                                   
+        published: 3003
+        protocol: tcp
+        mode: host
     networks:
       - bubbles-network
     deploy:
