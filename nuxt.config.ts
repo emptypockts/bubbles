@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules:[
     '@pinia/nuxt'
@@ -17,64 +16,62 @@ export default defineNuxtConfig({
       ]
     }
   },
-nitro:{
-  routeRules:{
-    '/_nuxt/**':{
-      headers:{
-        'Cache-Control': 'public, max-age=10, must-revalidate',
+  nitro:{
+    routeRules:{
+      '/_nuxt/**':{
+        headers:{
+          'Cache-Control': 'public, max-age=10, must-revalidate',
+        }
       }
-    }
-  },
-  devProxy:{
-    '/api':{
-      target:'http://localhost:3000',
-      changeOrigin:true,
-      secure:false,
     },
-    '/ws':{
-      target: 'ws://localhost:3003',
-      ws:true
-    }
-  }
-},
-plugins:[{
-  src:'~/plugins/websocket.client.js',
-  mode:'client'
-}
-  ],
+    // Only use devProxy in development
+    ...(process.env.NODE_ENV === 'development' && {
+      devProxy:{
+        '/api':{
+          target:'http://localhost:3000',
+          changeOrigin:true,
+          secure:false,
+        },
+        '/ws':{
+          target: 'ws://localhost:3003',
+          ws:true
+        }
+      }
+    })
+  },
+  plugins:[{
+    src:'~/plugins/websocket.client.js',
+    mode:'client'
+  }],
   vite:{
-
     server:{
-	    port:3001,
       watch:{
         usePolling:true,
         interval:1000,
       },
-      
-      proxy:{
-        '/ws': { 
-          target: 'ws://localhost:3003', 
-          ws: true }, 
-        '/api':{
-          target:'http://localhost:3000',
-          changeOrigin:true,
-          secure:false
+      // Only use proxies in dev mode
+      ...(process.env.NODE_ENV === 'development' && {
+        proxy:{
+          '/ws': { 
+            target: 'ws://localhost:3003', 
+            ws: true 
+          }, 
+          '/api':{
+            target:'http://localhost:3000',
+            changeOrigin:true,
+            secure:false
+          }
         }
-      },
-      
+      })
     }
   },
   compatibilityDate: '2024-11-01',
-    runtimeConfig: {
+  runtimeConfig: {
     public: {
-      // These are default values for client-side (browser) and fallback
       apiBase: process.env.NUXT_PUBLIC_EXTERNAL_API_BASE || 'https://bubbles.eacsa.us/api',
-      wsUrl: process.env.NUXT_PUBLIC_EXTERNAL_WS_URL || 'wss://wss.eacsa.us',
+      wsUrl: process.env.NUXT_PUBLIC_EXTERNAL_WS_URL || 'wss://bubbles.eacsa.us/ws',
     },
-    // Server-side only variables (not exposed to client).
-    // These will be overridden by environment variables in Docker.
-    serverApiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000/api', // Default for SSR in dev, but Docker env will override
-    serverWsUrl: process.env.NUXT_PUBLIC_WS_URL || 'ws://localhost:3003',   // Default for SSR in dev, but Docker env will override
+    serverApiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000/api',
+    serverWsUrl: process.env.NUXT_PUBLIC_WS_URL || 'ws://ws:3003',
   },
-
 });

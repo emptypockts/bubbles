@@ -1,5 +1,4 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import http from 'http';
 import dotenv from 'dotenv';
 dotenv.config();
 const PORT= process.env.PORT_WS||3003;

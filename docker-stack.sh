@@ -65,8 +65,8 @@ fi
 # Create data directory and set permissions
 echo "Creating data directory at $DATA_DIR..."
 sudo mkdir -p "$DATA_DIR"
-# Assuming 'appuser' will have UID/GID 1001. Adjust if your non-root user has a different UID/GID.
-sudo chown -R 1001:1001 "$DATA_DIR"
+# Assuming 'appuser' will have UID/GID 100. Adjust if your non-root user has a different UID/GID.
+sudo chown -R 100:100 "$DATA_DIR"
 sudo chmod -R 775 "$DATA_DIR"
 
 # Backup existing database and copy to persistent storage
@@ -75,12 +75,12 @@ if [ -f "$PROJECT_DIR/bubbles.db" ]; then
   sudo cp "$PROJECT_DIR/bubbles.db" "$DATA_DIR/bubbles.db.backup"
   echo "Copying bubbles.db to persistent storage..."
   sudo cp "$PROJECT_DIR/bubbles.db" "$DATA_DIR/bubbles.db"
-  sudo chown 1001:1001 "$DATA_DIR/bubbles.db"
+  sudo chown 100:100 "$DATA_DIR/bubbles.db"
 else
   echo "No existing bubbles.db found in project directory. Starting fresh or assuming it's already in $DATA_DIR."
   # If bubbles.db doesn't exist in PROJECT_DIR but might exist in DATA_DIR, ensure correct ownership
   if [ -f "$DATA_DIR/bubbles.db" ]; then
-    sudo chown 1001:1001 "$DATA_DIR/bubbles.db"
+    sudo chown 100:100 "$DATA_DIR/bubbles.db"
   fi
 fi
 

@@ -9,9 +9,22 @@ import jwt from 'jsonwebtoken';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CloudAdapter, TurnContext } from 'botbuilder';
 import { ConfigurationBotFrameworkAuthentication } from 'botbuilder';
+import fs from 'fs';
 dotenv.config();
 const app = express();
-const SECRET_KEY = process.env.SECRET_KEY
+let SECRET_KEY = process.env.SECRET_KEY
+let GEMINI_API = process.env.GEMINI_API
+let DB_PATH = process.env.DB_PATH
+// If running in Docker Swarm, read from secrets
+if (fs.existsSync('/run/secrets/SECRET_KEY')) {
+  SECRET_KEY = fs.readFileSync('/run/secrets/SECRET_KEY', 'utf8').trim();
+}
+if (fs.existsSync('/run/secrets/GEMINI_API')) {
+  GEMINI_API = fs.readFileSync('/run/secrets/GEMINI_API', 'utf8').trim();
+}
+if (fs.existsSync('/run/secrets/DB_PATH')){
+    DB_PATH = fs.readFileSync('/run/secrets/DB_PATH','utf-8').trim();
+}
 const allowedOrigins = ['http://localhost:3001', 'http://192.168.1.202:3001', 'https://bubbles.eacsa.us','https://backend.eacsa.us']
 app.use(cors({
   origin: function (origin, callback) {
@@ -52,7 +65,7 @@ app.use((req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     next();
 });
-const dbPath = process.env.DB_PATH||'/app/data/bubbles.db'
+const dbPath = DB_PATH||'/app/data/bubbles.db'
 const db = new sqlite3.Database(dbPath)
 const hashPassword = async (password) => {
     const saltRounds = 10;
@@ -1219,7 +1232,7 @@ app.post('/api/v1/gemini', async (req, res) => {
     }
     try {
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API);
+        const genAI = new GoogleGenerativeAI(GEMINI_API);
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
             systemInstruction:agent,
@@ -1278,6 +1291,9 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'healthy', timestamp: new Date() });
 });
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`api server is running on port ${PORT}`);
+const server = 	app.listen(PORT,'0.0.0.0', () => {
+	const {address, port }=server.address();
+      console.log("=== Server Running ===");
+  console.log("Host:", address);
+  console.log("Port:", port);
 });

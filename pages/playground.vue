@@ -129,7 +129,8 @@ import ai from './ai.vue';
 import groupCenter from './groupCenter.vue';
 import createGroupCenter from './createGroupCenter.vue';
 import invitationCenter from './invitationCenter.vue';
-const webSocketUrl = 'wss://wss.eacsa.us';
+
+const webSocketUrl = useRuntimeConfig().public.wsUrl
 const isConnected = ref(false);
 const { $websocket } = useNuxtApp();
 const route = useRouter();
@@ -144,15 +145,12 @@ const lastLoadedAt = ref(null);
 const allLastLoadedAt = ref(null);
 const avatars = ref({});
 const group_id = ref(null);
-const groupGui = ref(false);
 const groupsNames = ref([]);
 const myGroups = ref([]);
 const showMenu = ref(false);
 const selectedGroupId = ref(null);
 const selectedGroupName = ref(null);
-const createGroupGui = ref(false);
 const invitationCount = ref(0);
-const invitationCenterDisp = ref(false);
 const userInvitations = ref([]);
 const blurrBackground = ref(false);
 const anyMessage = ref('');
