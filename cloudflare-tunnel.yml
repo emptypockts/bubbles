@@ -1,0 +1,17 @@
+services:
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiZmU2MzA1OTQ2YmZmYzhhNGZhNzBkMTdlYzMxZWMyYmYiLCJ0IjoiYTE0Yzg2MDEtZGQ2Ny00MmU2LTk4NTktODgwYTFhMWNhODljIiwicyI6Ik5tRXhNemRrTURBdE16RXlPQzAwTVdaaUxUbGhOamN0WkdZNU5tUXhOVFZoWVRRNCJ9
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - bubbles-app_bubbles-network
+
+networks:
+  bubbles-app_bubbles-network:
+    driver: overlay
+    external: true
+

@@ -71,7 +71,7 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_EXTERNAL_API_BASE || 'https://bubbles.eacsa.us/api',
       wsUrl: process.env.NUXT_PUBLIC_EXTERNAL_WS_URL || 'wss://bubbles.eacsa.us/ws',
     },
-    serverApiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000/api',
-    serverWsUrl: process.env.NUXT_PUBLIC_WS_URL || 'ws://ws:3003',
+    serverApiBase: process.env.NUXT_PUBLIC_API_BASE || 'http:/api:3000/api',
+    serverWsUrl: process.env.NUXT_PUBLIC_WS_URL || 'ws://websocket-service:3003/ws',
   },
 });
