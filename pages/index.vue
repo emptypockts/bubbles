@@ -38,23 +38,30 @@
     </html>
 
   </template>
-<script setup>
+  <script setup>
 import {ref} from 'vue';
 import {useRouter} from 'vue-router';
-
-
 const userName= ref('');
 const password = ref('');
 const isLoading=ref(false);
-const anyMessage=ref('');
+const anyMessage=ref(''); // This ref will now only be set for error messages, not temporary ones.
 const router=useRouter();
-
 const handleLogin= async()=>{
     isLoading.value=true;
-    anyMessage.value='';
+    anyMessage.value=''; // Clear previous messages
     try{
-        const response = await $fetch('/api/login_user',{
-            baseURL:useRuntimeConfig().public.apiBaseURL,
+        // --- START OF CHANGES ---
+        // Get runtime config
+        const { public: publicConfig, serverApiBase } = useRuntimeConfig();
+        // Determine the API base URL based on whether it's client-side or server-side
+        // process.client is true when running in the browser, false during SSR
+        const apiBaseUrl = process.client ? publicConfig.apiBase : serverApiBase;
+        // Construct the full URL for the API endpoint
+        // Assuming your backend expects /api/login_user directly under the base path,
+        // so apiBaseUrl should already include the '/api' prefix.
+        const fullApiUrl = `${apiBaseUrl}/login_user`; // Concatenate base with specific endpoint
+        // --- END OF CHANGES ---
+        const response = await $fetch(fullApiUrl,{ // <-- Use the fullApiUrl here
             method:'POST',
             body:{
                 userName:userName.value,
@@ -68,14 +75,12 @@ const handleLogin= async()=>{
         router.push('/playground')
     }catch(err){
        console.log(err);
-       showTempMessage(anyMessage,'oopsie we hit a snag, try again later (｡•́︿•̀｡)',2000);
+       // Now anyMessage will hold the error message until cleared manually or by next action.
+       anyMessage.value = 'Oopsie, we hit a snag, try again later (｡•́︿•̀｡)';
     }finally{
         isLoading.value=false;
-
     }
-
 }
-
 </script>
 <style scoped>
 /* Login container with background image */

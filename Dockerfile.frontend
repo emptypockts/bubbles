@@ -1,0 +1,51 @@
+# Stage 1: Build the Nuxt.js application
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package.json and pnpm-lock.yaml for dependency caching
+COPY package.json ./
+
+# Install pnpm and dependencies
+RUN npm install -g npm && npm install --frozen-lockfile
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the Nuxt.js application for production
+RUN npm run build
+
+# Stage 2: Serve the Nuxt.js application with a lightweight server
+FROM node:20-alpine AS runner
+
+RUN addgroup -S appgroup && adduser -S -G appgroup appuser
+
+WORKDIR /app
+
+# Install serve-handler or similar to serve the .output directory
+# Nuxt 3's Nitro output can be served directly by Node, so we just need Node
+# Copy only the necessary files from the builder stage
+COPY --from=builder /app/.output ./.output
+COPY --from=builder /app/package.json ./package.json
+
+
+# Ensure the non-root user can read/execute the application files
+# This is crucial! Give ownership to the new user.
+RUN chown -R appuser:appgroup /app
+
+
+# Switch to the non-root user
+USER appuser
+
+# If you have specific dependencies for the runtime (e.g., in package.json for dev deps)
+# you might need to run pnpm install --prod here.
+# For a standard Nuxt 3 build, the .output should be self-contained enough.
+
+# Expose the port Nuxt will listen on (default is 3000 for Nitro, but you run it on 3001)
+EXPOSE 3001
+
+# Command to run the Nuxt 3 application
+# Nuxt 3 built with 'npm run build' generates a .output directory.
+# This directory contains a server-ready Node.js application.
+# The entry point is typically .output/server/index.mjs
+CMD ["node", "./.output/server/index.mjs"]

@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S -G appgroup appuser
+
+# For the API, if it writes to a specific directory (like your DB_PATH),
+# ensure that directory is owned by the appuser or has write permissions.
+# Assuming /app/data is where bubbles.db will reside
+RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+ENV DB_PATH=/app/data/bubbles.db
+
+
+EXPOSE 3000
+
+CMD ["node", "dbTransaction.js"]
+

@@ -41,7 +41,7 @@
 
     </div>
 
-    <div class="right panel">
+    <div class="right-panel">
 
       <div class="block-form">
         <div class="avatar-title">
@@ -129,7 +129,8 @@ import ai from './ai.vue';
 import groupCenter from './groupCenter.vue';
 import createGroupCenter from './createGroupCenter.vue';
 import invitationCenter from './invitationCenter.vue';
-const webSocketUrl = 'wss://wss.dahoncho.com';
+
+const webSocketUrl = useRuntimeConfig().public.wsUrl
 const isConnected = ref(false);
 const { $websocket } = useNuxtApp();
 const route = useRouter();
@@ -144,15 +145,12 @@ const lastLoadedAt = ref(null);
 const allLastLoadedAt = ref(null);
 const avatars = ref({});
 const group_id = ref(null);
-const groupGui = ref(false);
 const groupsNames = ref([]);
 const myGroups = ref([]);
 const showMenu = ref(false);
 const selectedGroupId = ref(null);
 const selectedGroupName = ref(null);
-const createGroupGui = ref(false);
 const invitationCount = ref(0);
-const invitationCenterDisp = ref(false);
 const userInvitations = ref([]);
 const blurrBackground = ref(false);
 const anyMessage = ref('');
@@ -240,7 +238,6 @@ const create_bubble = async () => {
   if (play.value) {
     try {
       const response = await $fetch('api/create_bubble', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'POST',
         body: {
           userName: userName.value,
@@ -390,7 +387,6 @@ const leaveGroup = async () => {
   if (confirm('are you sure you want to leave this group?')) {
     try {
       const response = await $fetch('/api/v1/GroupUser', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'DELETE',
         body: {
           userName: userName,
@@ -421,7 +417,6 @@ const deleteGroup = async () => {
   if (confirm('are you sure you want to delete this group?')) {
     try {
       const response = await $fetch('api/delete_group_id', {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'DELETE',
         body: {
           userName: userName,
@@ -592,7 +587,6 @@ const get_other_avatars = async (userName) => {
   if (!avatars.value[userName]) {
     try {
       const response = await $fetch(`/api/other_avatar?userName=${userName}`, {
-        baseURL: useRuntimeConfig().public.apiBaseURL,
         method: 'GET'
       })
       avatars.value[userName] = response.avatar;
@@ -911,15 +905,8 @@ const getBubbleStyle = (bubble) => {
 }
 
 .bubble-container {
-  max-width: 1200px;
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: left;
-  margin: 0 auto;
-  padding: 1rem;
-  gap: 1rem;
+  flex:1 1 auto;
+  min-width: 0;
 
 }
 
@@ -941,6 +928,10 @@ const getBubbleStyle = (bubble) => {
 }
 
 .right-panel {
-  position: -webkit-sticky;
+  position: sticky;
+  height: fit-content;
+  top:20px;
+  align-self: flex-start;
+   flex: 0 0 320px; 
 }
 </style>
