@@ -237,7 +237,7 @@ const create_bubble = async () => {
   const token = localStorage.getItem('token');
   if (play.value) {
     try {
-      const response = await $fetch('api/create_bubble', {
+      const response = await $fetch('/api/create_bubble', {
         method: 'POST',
         body: {
           userName: userName.value,
